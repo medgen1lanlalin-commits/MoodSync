@@ -1,227 +1,368 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Heart, 
-  Smile, 
-  Meh, 
-  Frown, 
-  Zap, 
-  Activity, 
-  Utensils, 
-  Brain, 
-  BarChart2, 
-  Users, 
-  Watch, 
-  PlusCircle, 
-  TrendingUp, 
-  AlertCircle, 
-  ChevronRight,
-  Info,
-  Calendar
+  Heart, Smile, Meh, Frown, Zap, Activity, Utensils, 
+  Brain, BarChart2, Users, Watch, PlusCircle, 
+  TrendingUp, AlertCircle, ChevronRight, Info, Coffee
 } from 'lucide-react';
 
-// --- Components ---
+/**
+ * MoodSync - A Nutritional Psychiatry & Bio-feedback Application
+ * Developed for tracking the relationship between gut-health and mental well-being.
+ */
 
-const ProgressBar = ({ value, colorClass = "bg-rose-400" }) => (
-  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-    <div className={`h-full ${colorClass} transition-all duration-1000`} style={{ width: `${value}%` }}></div>
+// --- Shared Components ---
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white rounded-[2.5rem] p-6 shadow-xl shadow-rose-100/40 border border-rose-50 transition-all hover:shadow-rose-200/50 ${className}`}>
+    {children}
   </div>
 );
 
-const App = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [step, setStep] = useState(1);
-  const [mood, setMood] = useState(3);
-  const [gutStatus, setGutStatus] = useState(3);
-
-  // Content Switching Logic
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return (
-          <div className="space-y-6 animate-in fade-in duration-700">
-            <div className="flex justify-between items-center pt-2">
-              <div>
-                <h1 className="text-2xl font-black text-gray-800 tracking-tight">สวัสดี คุณแก้ม 🌸</h1>
-                <p className="text-[10px] text-rose-400 font-bold uppercase tracking-widest">MoodSync Bio-Syncing</p>
-              </div>
-              <div className="w-10 h-10 bg-gradient-to-tr from-rose-300 to-pink-200 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white font-bold">K</div>
-            </div>
-
-            {/* Food-Mood Index Card */}
-            <div className="bg-white rounded-[2.5rem] p-6 shadow-xl shadow-rose-100/50 border border-rose-50 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 opacity-10">
-                <Brain size={80} className="text-rose-500" />
-              </div>
-              <div className="relative z-10">
-                <p className="text-gray-400 text-[10px] font-bold uppercase mb-1">Food-Mood Index Today</p>
-                <div className="flex items-end gap-2 mb-4">
-                  <span className="text-6xl font-black text-gray-800">84</span>
-                  <span className="text-gray-400 font-bold mb-2">/ 100</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold">#StableSugar</span>
-                  <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold">#SerotoninUp</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bio-Feedback: HRV */}
-            <div className="bg-gray-900 rounded-[2.5rem] p-6 text-white shadow-2xl relative overflow-hidden">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="font-bold text-lg">Bio-Feedback (HRV)</h3>
-                  <p className="text-[10px] text-gray-400 flex items-center gap-1"><Watch size={12} /> Apple Watch Connected</p>
-                </div>
-                <Activity className="text-rose-400 animate-pulse" />
-              </div>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-black tracking-tighter">68</span>
-                <span className="text-xs font-bold text-gray-500">ms</span>
-                <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-bold">สมดุล</span>
-              </div>
-              <ProgressBar value={68} colorClass="bg-gradient-to-r from-rose-500 to-orange-400" />
-            </div>
-
-            {/* Meal Suggestion */}
-            <div className="space-y-4">
-              <h3 className="font-black text-gray-800 text-lg uppercase px-2">Meal Recommendation</h3>
-              <div className="bg-rose-50/50 rounded-[2rem] p-5 border border-rose-100">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white p-3 rounded-2xl shadow-sm text-rose-400"><Zap size={24} /></div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold bg-white text-rose-500 px-2 py-0.5 rounded uppercase">Low GI</span>
-                    </div>
-                    <h4 className="font-bold text-gray-800 text-sm mt-1">โอ๊ตมีลกล้วยหอมและดาร์กช็อก</h4>
-                    <p className="text-[10px] text-gray-500 mt-1 italic">"ช่วยรักษาระดับพลังงานให้คงที่และลดความเครียด"</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 'log':
-        return (
-          <div className="space-y-6 pb-20 animate-in slide-in-from-right duration-500">
-            <div className="pt-4">
-              <h2 className="text-3xl font-black text-gray-800">Check-in ✨</h2>
-              <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">ขั้นตอน {step} / 2</p>
-            </div>
-            {step === 1 ? (
-              <div className="space-y-8">
-                <section className="text-center">
-                  <p className="text-gray-600 font-bold mb-6 italic">ตอนนี้รู้สึกอย่างไรคะ?</p>
-                  <div className="flex justify-between items-center bg-white p-4 rounded-3xl shadow-sm border border-rose-50">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <button key={level} onClick={() => setMood(level)} className={`transition-all ${mood === level ? 'scale-125' : 'opacity-40 grayscale'}`}>
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${mood === level ? 'bg-rose-400 text-white shadow-lg' : 'bg-gray-50 text-gray-400'}`}>
-                          {level === 1 && <Frown />}
-                          {level === 3 && <Meh />}
-                          {level === 5 && <Heart />}
-                          {level !== 1 && level !== 3 && level !== 5 && <Smile />}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-                <section className="bg-white p-6 rounded-[2.5rem] border border-rose-50 shadow-sm space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-gray-700 flex items-center gap-2"><Brain size={18} className="text-rose-400" /> Gut-Check</h3>
-                    <Info size={14} className="text-gray-300" />
-                  </div>
-                  <input type="range" min="1" max="5" value={gutStatus} onChange={(e) => setGutStatus(e.target.value)} className="w-full accent-rose-400 h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer" />
-                  <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
-                    <span>ท้องอืด</span>
-                    <span>ปกติ</span>
-                    <span>สบาย</span>
-                  </div>
-                </section>
-                <button onClick={() => setStep(2)} className="w-full bg-rose-400 text-white py-5 rounded-[2rem] font-black shadow-xl">บันทึกอาหารต่อ 🥗</button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <h3 className="font-bold text-gray-700 mb-2">กลุ่มสารอาหารที่ทาน:</h3>
-                {['Probiotics', 'Vit B6/B12', 'Magnesium', 'High Sugar'].map((label, idx) => (
-                  <label key={idx} className="flex items-center gap-4 p-5 bg-white border border-rose-50 rounded-[2rem] cursor-pointer hover:bg-rose-50/30">
-                    <input type="checkbox" className="w-6 h-6 accent-rose-400" />
-                    <span className="font-bold text-gray-800 text-sm">{label}</span>
-                  </label>
-                ))}
-                <button onClick={() => { setStep(1); setActiveTab('dashboard'); }} className="w-full bg-gray-900 text-white py-5 rounded-[2rem] font-black shadow-xl mt-4">บันทึกสำเร็จ ✨</button>
-              </div>
-            )}
-          </div>
-        );
-      case 'analysis':
-        return (
-          <div className="space-y-6 animate-in fade-in duration-700">
-            <h2 className="text-2xl font-black text-gray-800 pt-2">AI Insights ✨</h2>
-            <div className="bg-orange-50 border border-orange-100 p-5 rounded-[2rem] flex gap-4">
-              <AlertCircle className="text-orange-500" />
-              <div>
-                <h4 className="font-bold text-orange-800 text-sm">Sugar Crash Alert! 📉</h4>
-                <p className="text-xs text-orange-700/80 leading-relaxed mt-1">พบอาการหงุดหงิดหลังทานน้ำตาลสูงในช่วง 2 ชั่วโมงที่ผ่านมา</p>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-[2.5rem] border border-rose-50 shadow-sm h-48 flex items-end justify-between gap-2 px-4">
-              {[40, 70, 30, 85, 55, 95, 80].map((h, i) => (
-                <div key={i} className="flex-1 bg-rose-200 rounded-t-lg transition-all" style={{ height: `${h}%` }}></div>
-              ))}
-            </div>
-          </div>
-        );
-      case 'community':
-        return (
-          <div className="py-20 text-center space-y-4 animate-in fade-in">
-            <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-300"><Users size={40} /></div>
-            <h2 className="text-xl font-black text-gray-700">Community Support</h2>
-            <p className="text-xs text-gray-400">แบ่งปันเมนูอารมณ์ดีเร็วๆ นี้</p>
-          </div>
-        );
-      default:
-        return null;
-    }
+const Badge = ({ children, variant = "default" }) => {
+  const variants = {
+    default: "bg-rose-50 text-rose-500 border-rose-100",
+    success: "bg-green-50 text-green-600 border-green-100",
+    warning: "bg-orange-50 text-orange-600 border-orange-100"
   };
-
   return (
-    <div className="min-h-screen bg-[#FFF8F9] flex justify-center selection:bg-rose-200">
-      <div className="w-full max-w-md bg-white min-h-screen relative shadow-2xl overflow-hidden flex flex-col border-x border-rose-100">
-        
-        <main className="flex-1 px-6 pt-6 overflow-y-auto no-scrollbar">
-          {renderContent()}
-        </main>
-
-        {/* Navbar */}
-        <div className="fixed bottom-0 max-w-md w-full bg-white/80 backdrop-blur-xl border-t border-rose-50 px-6 py-4 flex justify-around items-center z-50 rounded-t-[2.5rem]">
-          {[
-            { id: 'dashboard', icon: <Activity size={20} />, label: 'ภาพรวม' },
-            { id: 'log', icon: <PlusCircle size={24} />, label: 'บันทึก' },
-            { id: 'analysis', icon: <BarChart2 size={20} />, label: 'วิเคราะห์' },
-            { id: 'community', icon: <Users size={20} />, label: 'ชุมชน' },
-          ].map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex flex-col items-center gap-1 ${activeTab === tab.id ? 'text-rose-500' : 'text-gray-300'}`}>
-              <div className={activeTab === tab.id ? 'bg-rose-50 p-2 rounded-xl' : ''}>{tab.icon}</div>
-              <span className="text-[10px] font-bold">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;600&family=Nunito:wght@700;900&display=swap');
-        body { font-family: 'Nunito', 'Mitr', sans-serif; background-color: #FFF8F9; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slide-in-from-right { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .animate-in { animation-fill-mode: both; }
-        .fade-in { animation-name: fade-in; }
-        .slide-in-from-right { animation-name: slide-in-from-right; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #fb7185; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-      `}</style>
-    </div>
+    <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${variants[variant]}`}>
+      {children}
+    </span>
   );
 };
 
-export default App;
+// --- Main Application Component ---
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [logStep, setLogStep] = useState(1);
+  const [moodLevel, setMoodLevel] = useState(3);
+  const [gutScore, setGutScore] = useState(3);
+  
+  // Mock Data for Visualization
+  const foodMoodScore = 84;
+  const hrvValue = 68;
+
+  const renderDashboard = () => (
+    <div className="space-y-6 pb-28 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Header */}
+      <div className="flex justify-between items-center pt-2">
+        <div>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">สวัสดี คุณแก้ม 🌸</h1>
+          <p className="text-[10px] text-rose-400 font-bold uppercase tracking-widest">MoodSync Bio-Syncing</p>
+        </div>
+        <div className="w-11 h-11 bg-gradient-to-tr from-rose-400 to-pink-200 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white font-bold text-lg">K</div>
+      </div>
+
+      {/* 1. Food-Mood Index (AI Insight) */}
+      <Card className="relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-5">
+          <Brain size={100} className="text-rose-500" />
+        </div>
+        <div className="relative z-10">
+          <p className="text-gray-400 text-[10px] font-bold uppercase mb-1 tracking-widest">Food-Mood Index Today</p>
+          <div className="flex items-end gap-2 mb-4">
+            <span className="text-6xl font-black text-gray-800 tracking-tighter">{foodMoodScore}</span>
+            <span className="text-gray-400 font-bold mb-2">/ 100</span>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="success">#SugarStable</Badge>
+            <Badge>#SerotoninUp</Badge>
+          </div>
+        </div>
+      </Card>
+
+      {/* 2. Bio-Feedback Integration (HRV) */}
+      <div className="bg-gray-900 rounded-[2.5rem] p-7 text-white shadow-2xl relative overflow-hidden group">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              Bio-Feedback (HRV)
+            </h3>
+            <p className="text-[10px] text-gray-400 flex items-center gap-1 opacity-80 uppercase tracking-tighter">
+              <Watch size={12} /> Syncing with Apple Watch
+            </p>
+          </div>
+          <Activity className="text-rose-400 animate-pulse" />
+        </div>
+        <div className="flex items-baseline gap-2 mb-3">
+          <span className="text-5xl font-black tracking-tighter">{hrvValue}</span>
+          <span className="text-sm font-bold text-gray-500 uppercase">ms</span>
+          <span className="ml-auto text-[10px] bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-bold border border-green-500/30 uppercase">Balanced State</span>
+        </div>
+        <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden shadow-inner">
+          <div 
+            className="h-full bg-gradient-to-r from-rose-500 via-pink-400 to-orange-400 transition-all duration-1000" 
+            style={{ width: `${hrvValue}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* 3. Nutritional Prescription (Meal Suggestions) */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center px-2">
+          <h3 className="font-black text-gray-800 text-lg uppercase tracking-tight">Meal Prescription 🥗</h3>
+          <button className="text-[10px] font-bold text-rose-500 hover:underline tracking-widest uppercase">View All</button>
+        </div>
+        <div className="bg-rose-50/40 rounded-[2.2rem] p-5 border border-rose-100 hover:bg-rose-50 transition-colors cursor-pointer group">
+          <div className="flex items-center gap-4">
+            <div className="bg-white p-4 rounded-2xl shadow-sm text-rose-400 group-hover:scale-110 transition-transform">
+              <Zap size={24} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[9px] font-bold bg-white text-rose-500 px-2 py-0.5 rounded shadow-sm uppercase border border-rose-100">Low GI</span>
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Mood: Fatigue Relief</span>
+              </div>
+              <h4 className="font-bold text-gray-800 text-sm">โอ๊ตมีลกล้วยหอมและดาร์กช็อก</h4>
+              <p className="text-[11px] text-gray-500 leading-tight mt-1 opacity-80 italic">"Magnesium and complex carbs for sustained serotonin release"</p>
+            </div>
+            <ChevronRight size={16} className="text-rose-200" />
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderLogger = () => (
+    <div className="space-y-6 pb-28 animate-in slide-in-from-right duration-500">
+      <div className="pt-4 px-2">
+        <h2 className="text-3xl font-black text-gray-800">Log Your Day ✨</h2>
+        <p className="text-rose-400 text-xs font-bold uppercase tracking-[0.2em] mt-1">Step {logStep} / 2 • Mood & Gut</p>
+      </div>
+
+      {logStep === 1 ? (
+        <div className="space-y-10">
+          <section className="text-center bg-white p-8 rounded-[3rem] shadow-sm border border-rose-50">
+            <p className="text-gray-500 font-bold mb-8 uppercase text-xs tracking-widest italic">How are you feeling now?</p>
+            <div className="flex justify-between items-center gap-2">
+              {[
+                { lvl: 1, icon: <Frown size={28} />, label: 'Sad' },
+                { lvl: 2, icon: <AlertCircle size={28} />, label: 'Risk' },
+                { lvl: 3, icon: <Meh size={28} />, label: 'Okay' },
+                { lvl: 4, icon: <Smile size={28} />, label: 'Good' },
+                { lvl: 5, icon: <Heart size={28} />, label: 'Happy' }
+              ].map((item) => (
+                <button
+                  key={item.lvl}
+                  onClick={() => setMoodLevel(item.lvl)}
+                  className={`flex flex-col items-center gap-3 transition-all ${moodLevel === item.lvl ? 'scale-110' : 'opacity-30 grayscale blur-[0.5px]'}`}
+                >
+                  <div className={`w-14 h-14 rounded-3xl flex items-center justify-center transition-all shadow-md ${
+                    moodLevel === item.lvl ? 'bg-rose-400 text-white shadow-rose-200 rotate-6' : 'bg-gray-50 text-gray-400 hover:bg-rose-50'
+                  }`}>
+                    {item.icon}
+                  </div>
+                  <span className={`text-[9px] font-black uppercase tracking-tighter ${moodLevel === item.lvl ? 'text-rose-500' : 'text-gray-300'}`}>
+                    {item.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="bg-white p-7 rounded-[2.5rem] border border-rose-50 shadow-sm space-y-5">
+            <div className="flex justify-between items-center">
+              <h3 className="font-black text-gray-700 text-sm flex items-center gap-2 uppercase tracking-wide">
+                <Brain size={18} className="text-rose-400" /> Gut-Check Connection
+              </h3>
+              <Info size={14} className="text-gray-300" />
+            </div>
+            <input 
+              type="range" min="1" max="5" value={gutScore} 
+              onChange={(e) => setGutScore(parseInt(e.target.value))}
+              className="w-full accent-rose-400 h-2 bg-gray-100 rounded-full appearance-none cursor-pointer" 
+            />
+            <div className="flex justify-between text-[10px] font-black text-gray-300 uppercase tracking-widest">
+              <span>Bloated</span>
+              <span>Normal</span>
+              <span>Light</span>
+            </div>
+          </section>
+
+          <button 
+            onClick={() => setLogStep(2)} 
+            className="w-full bg-rose-400 text-white py-6 rounded-[2.5rem] font-black shadow-2xl shadow-rose-200/50 hover:bg-rose-500 transition-all active:scale-95 uppercase tracking-widest text-sm"
+          >
+            Log Nutrients ต่อ 🥗
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4 px-1 animate-in slide-in-from-bottom-8 duration-500">
+          <h3 className="font-black text-gray-700 mb-2 uppercase text-xs tracking-widest px-2">Nutrient Groups:</h3>
+          {[
+            { id: 'pro', label: 'Probiotics', sub: 'โยเกิร์ต, กิมจิ', desc: 'Gut-Brain Axis', icon: '🦠' },
+            { id: 'vit', label: 'Vit B6 / B12', sub: 'ปลา, ไข่, ตับ', desc: 'Serotonin Synthesis', icon: '🐟' },
+            { id: 'mag', label: 'Magnesium', sub: 'ถั่ว, ดาร์กช็อก', desc: 'Stress Relief', icon: '🍫' },
+            { id: 'sugar', label: 'High Sugar', sub: 'ขนมหวาน, น้ำหวาน', desc: 'Sugar Crash Risk', icon: '🍰' },
+          ].map((item) => (
+            <label key={item.id} className="flex items-center gap-4 p-5 bg-white border border-rose-50 rounded-[2.2rem] cursor-pointer hover:border-rose-300 transition-all hover:bg-rose-50/20 group">
+              <div className="relative">
+                <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-rose-100 accent-rose-500 cursor-pointer" />
+              </div>
+              <span className="text-3xl group-hover:scale-110 transition-transform">{item.icon}</span>
+              <div className="flex-1">
+                <div className="flex justify-between items-center">
+                  <p className="font-black text-gray-800 text-sm">{item.label}</p>
+                  <span className="text-[9px] font-black text-rose-300 uppercase italic">{item.desc}</span>
+                </div>
+                <p className="text-[10px] text-gray-400 font-bold tracking-tight uppercase">{item.sub}</p>
+              </div>
+            </label>
+          ))}
+          <button 
+            onClick={() => { setLogStep(1); setActiveTab('dashboard'); }} 
+            className="w-full bg-gray-900 text-white py-6 rounded-[2.5rem] font-black shadow-xl mt-6 hover:bg-black transition-all uppercase tracking-widest text-sm"
+          >
+            Finish Record ✨
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderAnalysis = () => (
+    <div className="space-y-6 pb-28 animate-in fade-in duration-700">
+      <div className="pt-2 px-2">
+        <h2 className="text-2xl font-black text-gray-800">AI Analysis ✨</h2>
+        <p className="text-xs text-rose-400 font-bold uppercase tracking-widest">Postprandial Mood Tracking</p>
+      </div>
+
+      <div className="bg-orange-50/80 border border-orange-100 p-6 rounded-[2.5rem] flex gap-5 shadow-sm">
+        <div className="bg-white p-3 rounded-2xl text-orange-500 shadow-sm h-fit border border-orange-50">
+          <AlertCircle size={24} />
+        </div>
+        <div>
+          <h4 className="font-black text-orange-900 text-sm uppercase tracking-tight">Sugar Crash Alert! 📉</h4>
+          <p className="text-xs text-orange-800/70 leading-relaxed mt-1 font-medium italic">
+            "พบความสัมพันธ์ระหว่างการทาน High Sugar และอารมณ์ดิ่งในช่วงบ่าย 3 วันที่ผ่านมา"
+          </p>
+        </div>
+      </div>
+
+      <Card>
+        <div className="flex justify-between items-center mb-8 px-1">
+          <h3 className="font-black text-gray-700 text-xs uppercase tracking-widest">Happiness vs Gut Health</h3>
+          <div className="flex gap-3 text-[9px] font-black uppercase">
+            <span className="flex items-center gap-1.5 text-rose-400"><div className="w-2 h-2 rounded-full bg-rose-400"></div> Mood</span>
+            <span className="flex items-center gap-1.5 text-blue-300"><div className="w-2 h-2 rounded-full bg-blue-300"></div> Gut</span>
+          </div>
+        </div>
+        <div className="h-48 flex items-end justify-between gap-2 px-2">
+          {[
+            {m: 40, g: 60}, {m: 70, g: 80}, {m: 30, g: 40}, 
+            {m: 85, g: 95}, {m: 55, g: 70}, {m: 95, g: 85}, {m: 80, g: 75}
+          ].map((item, i) => (
+            <div key={i} className="flex-1 flex gap-1.5 h-full items-end justify-center group">
+              <div 
+                style={{ height: `${item.m}%` }} 
+                className="w-2.5 bg-rose-300 rounded-t-full group-hover:bg-rose-400 transition-colors shadow-sm shadow-rose-100"
+              ></div>
+              <div 
+                style={{ height: `${item.g}%` }} 
+                className="w-2.5 bg-blue-100 rounded-t-full group-hover:bg-blue-200 transition-colors"
+              ></div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between px-2 mt-5 text-[10px] font-black text-gray-300 uppercase tracking-widest">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => <span key={day}>{day}</span>)}
+        </div>
+      </Card>
+
+      <div className="bg-rose-500 rounded-[2.5rem] p-7 text-white shadow-xl flex items-center justify-between group hover:bg-rose-600 transition-all cursor-pointer">
+        <div>
+          <h4 className="font-black text-lg uppercase tracking-tight">Mental Health Check</h4>
+          <p className="text-[10px] text-rose-100 font-bold uppercase tracking-widest mt-1 opacity-80">PHQ-9 Clinical Screening</p>
+        </div>
+        <div className="bg-white/20 p-3 rounded-2xl group-hover:translate-x-1 transition-transform">
+          <ChevronRight />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#FFF9FA] flex justify-center selection:bg-rose-200 font-sans">
+      <div className="w-full max-w-md bg-white min-h-screen relative shadow-2xl overflow-hidden flex flex-col border-x border-rose-100/50">
+        
+        {/* Main Content Viewport */}
+        <main className="flex-1 px-6 pt-6 overflow-y-auto no-scrollbar scroll-smooth">
+          {activeTab === 'dashboard' && renderDashboard()}
+          {activeTab === 'log' && renderLogger()}
+          {activeTab === 'analysis' && renderAnalysis()}
+          {activeTab === 'community' && (
+            <div className="py-24 text-center space-y-5 animate-in fade-in">
+              <div className="w-24 h-24 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-300 shadow-inner">
+                <Users size={48} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Community</h2>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Social Peer Support Soon</p>
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Bottom Navigation */}
+        <nav className="fixed bottom-0 max-w-md w-full bg-white/80 backdrop-blur-2xl border-t border-rose-50/50 px-8 py-5 flex justify-around items-center z-50 rounded-t-[3rem] shadow-[0_-15px_40px_rgba(255,182,193,0.15)]">
+          {[
+            { id: 'dashboard', icon: <Activity size={22} />, label: 'ภาพรวม' },
+            { id: 'log', icon: <PlusCircle size={28} />, label: 'บันทึก' },
+            { id: 'analysis', icon: <BarChart2 size={22} />, label: 'วิเคราะห์' },
+            { id: 'community', icon: <Users size={22} />, label: 'ชุมชน' },
+          ].map((tab) => (
+            <button 
+              key={tab.id} 
+              onClick={() => { setActiveTab(tab.id); setLogStep(1); }} 
+              className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${
+                activeTab === tab.id ? 'text-rose-500 scale-110' : 'text-gray-300 hover:text-rose-200'
+              }`}
+            >
+              <div className={`transition-all duration-300 ${activeTab === tab.id ? 'bg-rose-50 p-2.5 rounded-2xl shadow-sm' : ''}`}>
+                {tab.icon}
+              </div>
+              <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity ${activeTab === tab.id ? 'opacity-100' : 'opacity-0'}`}>
+                {tab.label}
+              </span>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;600;700&family=Nunito:wght@700;900&display=swap');
+        
+        body { 
+          font-family: 'Nunito', 'Mitr', sans-serif;
+          background-color: #FFF9FA;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        input[type=range]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          height: 24px;
+          width: 24px;
+          border-radius: 50%;
+          background: #fb7185;
+          cursor: pointer;
+          box-shadow: 0 5px 15px rgba(251, 113, 133, 0.4);
+          border: 3px solid white;
+        }
+
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slide-in-from-bottom { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slide-in-from-right { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        .animate-in { animation-fill-mode: both; }
+        .fade-in { animation-name: fade-in; }
+        .slide-in-from-bottom-4 { animation-name: slide-in-from-bottom; }
+        .slide-in-from-right { animation-name: slide-in-from-right; }
+      `}</style>
+    </div>
+  );
+}
 
