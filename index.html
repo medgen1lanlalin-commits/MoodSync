@@ -15,485 +15,195 @@ import {
   PlusCircle,
   TrendingUp,
   CloudRain,
-  Sun
+  Sun,
+  ChevronRight
 } from 'lucide-react';
 
-// --- Components ---
+// --- Sub-Components ---
 
-// 1. Navigation Bar (Soft Style)
-const Navbar = ({ activeTab, setActiveTab }) => {
-  const tabs = [
-    { id: 'dashboard', icon: <Activity size={24} />, label: 'ภาพรวม' },
-    { id: 'log', icon: <PlusCircle size={24} />, label: 'บันทึก' },
-    { id: 'analysis', icon: <BarChart2 size={24} />, label: 'วิเคราะห์' },
-    { id: 'community', icon: <Users size={24} />, label: 'ชุมชน' },
-  ];
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-pink-100 shadow-[0_-5px_20px_rgba(255,192,203,0.3)] px-6 py-4 flex justify-around items-center z-50 rounded-t-[2.5rem]">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
-          className={`relative flex flex-col items-center gap-1 transition-all duration-500 ${
-            activeTab === tab.id ? 'text-rose-400 transform -translate-y-2' : 'text-gray-300 hover:text-rose-300'
-          }`}
-        >
-          <div className={`${activeTab === tab.id ? 'bg-rose-50 p-3 rounded-full shadow-sm' : ''} transition-all duration-300`}>
-            {tab.icon}
-          </div>
-          <span className={`text-[10px] font-medium transition-opacity duration-300 ${activeTab === tab.id ? 'opacity-100' : 'opacity-0 h-0'}`}>
-            {tab.label}
-          </span>
-        </button>
-      ))}
+const NavButton = ({ icon, label, active, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`flex flex-col items-center gap-1 transition-all duration-300 ${active ? 'text-rose-500 scale-110' : 'text-gray-400'}`}
+  >
+    <div className={`${active ? 'bg-rose-50 p-2 rounded-xl' : ''}`}>
+      {icon}
     </div>
-  );
-};
+    <span className="text-[10px] font-bold">{label}</span>
+  </button>
+);
 
-// 2. Dashboard Component
-const Dashboard = ({ logs, onNavigate }) => {
-  // Mock HRV & Bio-Feedback Data
-  const hrvScore = 85; 
-  const stressLevel = "สมดุล";
-  const latestLog = logs[0];
+const Dashboard = ({ moodLogs, foodLogs, score, onNavigate }) => {
+  const lastMood = moodLogs[moodLogs.length - 1] || { level: 3, label: 'ปกติ' };
+
+  const getRecommendation = () => {
+    if (!lastMood) return { title: "กำลังวิเคราะห์...", desc: "เริ่มบันทึกอารมณ์ของคุณวันนี้" };
+    if (lastMood.level <= 2) return { 
+      tag: "Energy Boost", 
+      title: "ข้าวไรซ์เบอร์รี่อกไก่และถั่วอัลมอนด์", 
+      desc: "อารมณ์เหนื่อยล้าต้องการ Low GI เพื่อรักษาระดับพลังงานให้คงที่" 
+    };
+    if (lastMood.level === 3) return { 
+      tag: "Gut Health", 
+      title: "กรีกโยเกิร์ตพร้อมเบอร์รี่รวม", 
+      desc: "เติม Probiotics เพื่อกระตุ้น Gut-Brain Axis ให้รู้สึกสดชื่นขึ้น" 
+    };
+    return { 
+      tag: "Maintain Happiness", 
+      title: "สลัดคินัวและดาร์กช็อกโกแลต", 
+      desc: "แมกนีเซียมและสารต้านอนุมูลอิสระช่วยรักษาอารมณ์ดีให้ยาวนาน" 
+    };
+  };
+
+  const recommendation = getRecommendation();
 
   return (
-    <div className="space-y-6 pb-28 animate-fade-in">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex justify-between items-center pt-2">
+      <div className="flex justify-between items-center px-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-700">สวัสดี, คุณแนน <span className="inline-block animate-bounce">🌸</span></h1>
-          <p className="text-rose-300 text-sm font-medium">วันนี้ใจฟูหรือยังคะ?</p>
+          <h2 className="text-2xl font-black text-gray-800 tracking-tight">MoodSync</h2>
+          <p className="text-xs text-rose-400 font-bold uppercase tracking-widest">Bio-Feedback Sync</p>
         </div>
-        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-400 font-bold border-4 border-white shadow-md">
+        <div className="w-10 h-10 bg-gradient-to-tr from-rose-400 to-orange-300 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white font-bold">
           N
         </div>
       </div>
 
-      {/* Bio-Feedback Card (The "Wow" Factor - Soft Pink Gradient) */}
-      <div className="bg-gradient-to-br from-rose-300 to-pink-200 rounded-[2rem] p-6 text-white shadow-xl shadow-pink-100 relative overflow-hidden group">
-        <div className="absolute -top-4 -right-4 bg-white/20 w-32 h-32 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
-        <div className="relative z-10">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-              <Watch size={14} />
-              <span className="text-xs font-medium">Apple Watch Connected</span>
-            </div>
-            <Activity className="animate-pulse text-white/80" size={20} />
-          </div>
-          
-          <div className="flex items-end gap-3 mb-2">
-            <h2 className="text-5xl font-bold tracking-tight">{hrvScore}</h2>
-            <span className="text-lg font-medium opacity-90 mb-2">ms (HRV)</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-rose-50 text-sm">
-            <div className="w-2 h-2 rounded-full bg-green-300 shadow-[0_0_8px_rgba(134,239,172,0.8)]"></div>
-            <span>ความเครียด: <strong>{stressLevel}</strong></span>
-          </div>
+      {/* Daily Summary Card */}
+      <div className="bg-white rounded-[2.5rem] p-6 shadow-xl shadow-rose-100/50 border border-rose-50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4">
+          <TrendingUp size={20} className="text-rose-200" />
+        </div>
+        <p className="text-gray-400 text-xs font-bold mb-1 uppercase">Food-Mood Index Today</p>
+        <div className="flex items-end gap-2 mb-4">
+          <span className="text-5xl font-black text-gray-800">{score}</span>
+          <span className="text-gray-400 font-bold mb-1">/ 100</span>
+        </div>
+        <div className="flex gap-2">
+          <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold">#SugarStable</span>
+          <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold">#GutBalanced</span>
         </div>
       </div>
 
-      {/* Nutritional Prescription (Smart Suggestion) */}
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-pink-50/50">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="bg-rose-50 p-2 rounded-xl text-rose-400">
-            <Brain size={20} />
-          </div>
-          <h3 className="font-bold text-gray-700">เมนูแนะนำวันนี้</h3>
-        </div>
-        
-        {latestLog ? (
-          <div>
-             <div className="flex items-center gap-2 mb-3 text-gray-500 text-sm">
-                <span>จากอารมณ์:</span>
-                <span className="bg-rose-50 text-rose-400 px-3 py-1 rounded-full text-xs font-bold">
-                  {getMoodLabel(latestLog.mood)}
-                </span>
-             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-              {getFoodSuggestion(latestLog.mood).map((item, idx) => (
-                <div key={idx} className="flex-shrink-0 bg-white border border-rose-100 p-3 rounded-2xl w-28 flex flex-col items-center gap-2 shadow-sm">
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="text-xs font-medium text-gray-600 text-center">{item.name}</span>
-                  <span className="text-[10px] text-rose-300 text-center">{item.benefit}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-            <p className="text-gray-400 text-sm">เริ่มบันทึกอารมณ์เพื่อรับคำแนะนำ</p>
-          </div>
-        )}
-      </div>
-
-      {/* Quick Actions (Large Buttons) */}
-      <div className="grid grid-cols-2 gap-4">
-        <button 
-          onClick={() => onNavigate('log')}
-          className="group bg-white p-5 rounded-[2rem] shadow-sm border border-pink-50 flex flex-col items-center gap-3 hover:shadow-md hover:border-rose-100 transition-all"
-        >
-          <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
-            <Smile size={24} />
-          </div>
-          <span className="text-sm font-bold text-gray-600">เช็คอารมณ์</span>
-        </button>
-        <button 
-          onClick={() => onNavigate('log')}
-          className="group bg-white p-5 rounded-[2rem] shadow-sm border border-pink-50 flex flex-col items-center gap-3 hover:shadow-md hover:border-green-100 transition-all"
-        >
-          <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform">
-            <Utensils size={24} />
-          </div>
-          <span className="text-sm font-bold text-gray-600">บันทึกอาหาร</span>
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// 3. Logger Component (Clean & Soft Inputs)
-const Logger = ({ addLog, onCancel }) => {
-  const [step, setStep] = useState(1);
-  const [data, setData] = useState({
-    mood: 3,
-    food: '',
-    nutrients: [],
-    gutHealth: 3,
-    timestamp: new Date(),
-  });
-
-  const moods = [
-    { level: 1, icon: <CloudRain size={28} />, label: 'เศร้า/ดิ่ง', color: 'text-gray-400', bg: 'bg-gray-100' },
-    { level: 2, icon: <AlertCircle size={28} />, label: 'เครียด', color: 'text-orange-400', bg: 'bg-orange-50' },
-    { level: 3, icon: <Meh size={28} />, label: 'เฉยๆ', color: 'text-yellow-400', bg: 'bg-yellow-50' },
-    { level: 4, icon: <Smile size={28} />, label: 'สดใส', color: 'text-green-400', bg: 'bg-green-50' },
-    { level: 5, icon: <Sun size={28} />, label: 'มีความสุข', color: 'text-rose-400', bg: 'bg-rose-50' },
-  ];
-
-  const nutrientOptions = [
-    { id: 'probiotics', label: 'Probiotics', sub: 'โยเกิร์ต/กิมจิ', desc: 'Gut-Brain Axis', color: 'bg-blue-50 border-blue-100 text-blue-500' },
-    { id: 'b_vitamin', label: 'Vit B6/B12', sub: 'ปลา/ไข่/ธัญพืช', desc: 'Serotonin Booster', color: 'bg-yellow-50 border-yellow-100 text-yellow-600' },
-    { id: 'magnesium', label: 'Magnesium', sub: 'กล้วย/ดาร์กช็อก', desc: 'ลดความเครียด', color: 'bg-purple-50 border-purple-100 text-purple-500' },
-    { id: 'high_sugar', label: 'High Sugar', sub: 'ชานม/เค้ก', desc: 'เสี่ยง Sugar Crash', color: 'bg-rose-50 border-rose-100 text-rose-500' },
-  ];
-
-  const handleSave = () => {
-    addLog(data);
-    onCancel();
-  };
-
-  return (
-    <div className="pb-28 animate-slide-up">
-      <div className="flex items-center mb-6">
-        <button onClick={onCancel} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 mr-4">
-          <span className="text-xl">←</span>
-        </button>
-        <h2 className="text-xl font-bold text-gray-800">New Entry</h2>
-      </div>
-
-      <div className="flex gap-2 mb-8">
-        {[1, 2].map(s => (
-          <div key={s} className={`h-2 flex-1 rounded-full transition-colors duration-500 ${s <= step ? 'bg-rose-300' : 'bg-gray-100'}`}></div>
-        ))}
-      </div>
-
-      {step === 1 && (
-        <div className="space-y-8">
-          <div className="text-center">
-            <h3 className="text-lg font-bold text-gray-700 mb-6">How are you feeling?</h3>
-            <div className="flex justify-between px-1">
-              {moods.map((m) => (
-                <button
-                  key={m.level}
-                  onClick={() => setData({ ...data, mood: m.level })}
-                  className={`flex flex-col items-center gap-3 transition-all duration-300 ${
-                    data.mood === m.level ? 'transform -translate-y-2 scale-110' : 'opacity-60 hover:opacity-100'
-                  }`}
-                >
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${m.bg} ${m.color} ${data.mood === m.level ? 'ring-2 ring-rose-200' : ''}`}>
-                    {m.icon}
-                  </div>
-                  {data.mood === m.level && <span className="text-xs font-bold text-gray-600 animate-fade-in">{m.label}</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-               <label className="text-gray-700 font-bold flex items-center gap-2">
-                 <Activity size={18} className="text-rose-400"/> Gut-Check
-               </label>
-               <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-lg">Gut-Brain Axis</span>
-            </div>
-            
-            <input 
-              type="range" 
-              min="1" 
-              max="5" 
-              value={data.gutHealth}
-              onChange={(e) => setData({...data, gutHealth: parseInt(e.target.value)})}
-              className="w-full accent-rose-400 h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer"
-            />
-            <div className="flex justify-between text-[10px] text-gray-400 mt-3 font-medium uppercase tracking-wide">
-              <span>ท้องอืด/แน่น</span>
-              <span>ปกติ</span>
-              <span>สบายท้อง</span>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => setStep(2)}
-            className="w-full bg-rose-400 hover:bg-rose-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-rose-200 transition-all transform active:scale-95"
-          >
-            ต่อไป
-          </button>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-6">
-           <div className="text-center mb-6">
-            <h3 className="text-lg font-bold text-gray-700">What did you eat?</h3>
-            <p className="text-xs text-gray-400">ระบุกลุ่มสารอาหารเพื่อวิเคราะห์ผล</p>
-          </div>
-          
-          <input 
-            type="text" 
-            placeholder="เช่น ข้าวผัด, กรีกโยเกิร์ต..."
-            className="w-full p-5 bg-white rounded-2xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-rose-200 outline-none text-gray-600 placeholder:text-gray-300"
-            value={data.food}
-            onChange={(e) => setData({...data, food: e.target.value})}
-          />
-
-          <div className="grid grid-cols-1 gap-3">
-              {nutrientOptions.map((opt) => (
-                <label key={opt.id} className={`relative flex items-center p-4 rounded-2xl border transition-all cursor-pointer ${
-                  data.nutrients.includes(opt.id) ? `${opt.color} ring-1 ring-inset` : 'border-gray-50 bg-white hover:bg-gray-50'
-                }`}>
-                  <input 
-                    type="checkbox"
-                    className="absolute opacity-0"
-                    checked={data.nutrients.includes(opt.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setData({...data, nutrients: [...data.nutrients, opt.id]});
-                      } else {
-                        setData({...data, nutrients: data.nutrients.filter(id => id !== opt.id)});
-                      }
-                    }}
-                  />
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-4 transition-colors ${
-                     data.nutrients.includes(opt.id) ? 'border-current bg-current' : 'border-gray-200'
-                  }`}>
-                    {data.nutrients.includes(opt.id) && <span className="text-white text-xs">✓</span>}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between">
-                      <div className="font-bold text-sm text-gray-700">{opt.label}</div>
-                      <div className="text-[10px] opacity-70 font-medium bg-white/50 px-2 py-0.5 rounded-full">{opt.desc}</div>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{opt.sub}</div>
-                  </div>
-                </label>
-              ))}
-          </div>
-
-          <button 
-            onClick={handleSave}
-            className="w-full bg-rose-400 hover:bg-rose-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-rose-200 transition-all transform active:scale-95 mt-4"
-          >
-            บันทึกข้อมูล
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// 4. Analysis Component (Visual Data)
-const Analysis = () => {
-  return (
-    <div className="space-y-6 pb-28 animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-700">AI Analysis ✨</h1>
-
-      {/* Food-Mood Index Graph */}
-      <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-pink-50">
+      {/* Bio-Feedback Integration */}
+      <div className="bg-gray-900 rounded-[2.5rem] p-6 text-white shadow-2xl relative overflow-hidden group">
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-rose-500/20 rounded-full blur-3xl group-hover:bg-rose-500/30 transition-all"></div>
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-bold text-gray-700 flex items-center gap-2">
-            <TrendingUp size={18} className="text-rose-400" />
-            Food-Mood Index
-          </h3>
-          <span className="text-[10px] bg-rose-50 text-rose-400 px-2 py-1 rounded-full">Weekly</span>
+          <div>
+            <h3 className="font-bold text-lg">Real-time Stress (HRV)</h3>
+            <p className="text-xs text-gray-400 flex items-center gap-1">
+              <Watch size={12} /> Linked with Apple Watch
+            </p>
+          </div>
+          <Activity className="text-rose-400 animate-pulse" />
         </div>
-        
-        {/* Mock Graph Visual */}
-        <div className="relative h-48 w-full flex items-end justify-between px-2 gap-2">
-           {/* Grid lines */}
-           <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
-             <div className="border-t border-gray-400 w-full"></div>
-             <div className="border-t border-gray-400 w-full"></div>
-             <div className="border-t border-gray-400 w-full"></div>
-             <div className="border-t border-gray-400 w-full"></div>
-           </div>
-
-           {[
-             {d:'M', v:40, g:60}, {d:'T', v:30, g:40}, {d:'W', v:70, g:80}, 
-             {d:'T', v:85, g:80}, {d:'F', v:50, g:60}, {d:'S', v:90, g:90}, {d:'S', v:95, g:85}
-           ].map((item, i) => (
-             <div key={i} className="flex flex-col items-center gap-2 w-full h-full justify-end z-10 group cursor-pointer">
-                <div className="relative w-full flex gap-1 justify-center h-full items-end">
-                   {/* Mood Bar */}
-                   <div style={{height: `${item.v}%`}} className="w-2 bg-rose-300 rounded-t-full transition-all group-hover:bg-rose-400"></div>
-                   {/* Gut Bar */}
-                   <div style={{height: `${item.g}%`}} className="w-2 bg-teal-200 rounded-t-full transition-all group-hover:bg-teal-300"></div>
-                </div>
-                <span className="text-xs text-gray-400 font-medium">{item.d}</span>
-             </div>
-           ))}
-        </div>
-        
-        <div className="flex justify-center gap-6 mt-6">
-           <div className="flex items-center gap-2">
-             <div className="w-3 h-3 bg-rose-300 rounded-full"></div>
-             <span className="text-xs text-gray-500">อารมณ์</span>
-           </div>
-           <div className="flex items-center gap-2">
-             <div className="w-3 h-3 bg-teal-200 rounded-full"></div>
-             <span className="text-xs text-gray-500">สุขภาพลำไส้</span>
-           </div>
+        <div className="flex items-center gap-4">
+          <span className="text-4xl font-black tracking-tighter">64ms</span>
+          <div className="h-1 flex-1 bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-rose-500 to-orange-400 w-[64%]"></div>
+          </div>
         </div>
       </div>
 
-      {/* Insight Cards */}
+      {/* Nutritional Prescription */}
       <div className="space-y-4">
-        <div className="bg-orange-50/80 p-5 rounded-[2rem] border border-orange-100 flex gap-4">
-          <div className="bg-white p-3 h-fit rounded-full text-orange-400 shadow-sm">
-            <Zap size={20} />
-          </div>
-          <div>
-            <h4 className="font-bold text-gray-800 text-sm mb-1">Sugar Crash Alert! 🍰</h4>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              สัปดาห์นี้พบว่า 80% ของวันที่คุณทานของหวานช่วงบ่าย คุณจะมีอาการ "เหนื่อยล้า" ในช่วง 16:00 น.
-            </p>
-          </div>
+        <div className="flex justify-between items-center px-2">
+          <h3 className="font-black text-gray-800 text-lg">เมนูแนะนำตามอารมณ์</h3>
+          <button className="text-xs font-bold text-rose-500 flex items-center gap-1">
+            ดูทั้งหมด <ChevronRight size={14} />
+          </button>
         </div>
 
-        <div className="bg-blue-50/80 p-5 rounded-[2rem] border border-blue-100 flex gap-4">
-          <div className="bg-white p-3 h-fit rounded-full text-blue-400 shadow-sm">
-            <Brain size={20} />
+        <div className="bg-white rounded-[2rem] p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-3">
+             <span className="px-2 py-0.5 bg-rose-50 text-rose-500 text-[10px] font-bold rounded-md uppercase tracking-wider">
+               {recommendation.tag}
+             </span>
+             <span className="text-[10px] text-gray-400 font-medium">
+               Mood: {lastMood.label}
+             </span>
           </div>
-          <div>
-            <h4 className="font-bold text-gray-800 text-sm mb-1">Probiotics Power 🦠</h4>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              วันที่คุณทานโยเกิร์ต/กิมจิ กราฟความสุขของคุณมีความเสถียรมากกว่าปกติถึง 25% (Gut-Brain Link)
-            </p>
-          </div>
+          <h4 className="font-bold text-gray-800 mb-1">{recommendation.title}</h4>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            {recommendation.desc}
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-// 5. Community
-const Community = () => {
-  return (
-    <div className="space-y-6 pb-28 animate-fade-in">
-      <div className="flex justify-between items-end">
-        <h1 className="text-2xl font-bold text-gray-700">Feel Good Menu 🍲</h1>
-        <span className="text-xs text-rose-400 font-medium">124 friends online</span>
-      </div>
+// --- Main App Component ---
 
-      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-         {['#All', '#AnxietyRelief', '#GutHealth', '#EnergyBoost'].map((tag, i) => (
-           <button key={i} className={`px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-             i === 0 ? 'bg-rose-400 text-white shadow-md shadow-rose-200' : 'bg-white text-gray-400 border border-gray-100'
-           }`}>
-             {tag}
-           </button>
-         ))}
-      </div>
-
-      <div className="grid gap-5">
-        {[
-          { user: 'Minty', color: 'bg-green-100 text-green-600', title: 'Salmon Poke Bowl', tag: '#Omega3', likes: 45, desc: 'โอเมก้า 3 ช่วยลดเครียดได้จริง วันนี้ลองกินแล้วรู้สึกหัวแล่นมาก!' },
-          { user: 'Bambam', color: 'bg-orange-100 text-orange-600', title: 'Banana Smoothie', tag: '#Magnesium', likes: 120, desc: 'กล้วยหอม + นมอัลมอนด์ สูตรก่อนนอน หลับสบายสุดๆ' }
-        ].map((post, i) => (
-          <div key={i} className="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-50">
-             <div className="flex items-center gap-3 mb-3">
-               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${post.color}`}>
-                 {post.user[0]}
-               </div>
-               <div>
-                 <div className="font-bold text-gray-700 text-sm">{post.user}</div>
-                 <div className="text-[10px] text-gray-400">2 hours ago</div>
-               </div>
-               <span className="ml-auto text-[10px] bg-gray-50 text-gray-500 px-2 py-1 rounded-lg font-medium">{post.tag}</span>
-             </div>
-             <h4 className="font-bold text-gray-800 mb-2">{post.title}</h4>
-             <p className="text-xs text-gray-500 leading-relaxed mb-4">{post.desc}</p>
-             <div className="flex gap-4 border-t border-gray-50 pt-3">
-               <button className="flex items-center gap-1 text-xs text-rose-400 font-medium"><Heart size={14}/> {post.likes}</button>
-               <button className="flex items-center gap-1 text-xs text-gray-400"><Users size={14}/> Save Recipe</button>
-             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// --- Helpers ---
-const getMoodLabel = (l) => ['เศร้า', 'เครียด', 'เฉยๆ', 'สดใส', 'มีความสุข'][l-1];
-const getFoodSuggestion = (l) => {
-  // Logic: Low Mood -> Mg/B Vit, High Mood -> Probiotics/Maintenance
-  if (l <= 2) return [
-    { name: 'Dark Choc', icon: '🍫', benefit: 'Magnesium' },
-    { name: 'Banana', icon: '🍌', benefit: 'Vitamin B6' },
-    { name: 'Oatmeal', icon: '🥣', benefit: 'Serotonin' }
-  ]; 
-  return [
-    { name: 'Yogurt', icon: '🍦', benefit: 'Probiotics' },
-    { name: 'Nuts', icon: '🥜', benefit: 'Healthy Fat' },
-    { name: 'Salmon', icon: '🐟', benefit: 'Omega-3' }
-  ];
-};
-
-// --- Main App ---
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [logs, setLogs] = useState([{ mood: 2, timestamp: new Date() }]);
+  const [moodLogs, setMoodLogs] = useState([{ level: 3, label: 'ปกติ' }]);
+  const [foodLogs, setFoodLogs] = useState([]);
+  const [score, setScore] = useState(82);
 
-  const addLog = (newLog) => {
-    setLogs([newLog, ...logs]);
-    setActiveTab('dashboard');
+  const renderContent = () => {
+    switch(activeTab) {
+      case 'dashboard':
+        return <Dashboard moodLogs={moodLogs} foodLogs={foodLogs} score={score} onNavigate={setActiveTab} />;
+      case 'log':
+        return <div className="p-8 text-center text-gray-400">หน้าบันทึกข้อมูล (Coming Soon)</div>;
+      case 'insight':
+        return <div className="p-8 text-center text-gray-400">หน้าวิเคราะห์เชิงลึก (Coming Soon)</div>;
+      case 'community':
+        return <div className="p-8 text-center text-gray-400">หน้าชุมชน (Coming Soon)</div>;
+      default:
+        return <Dashboard moodLogs={moodLogs} foodLogs={foodLogs} score={score} />;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F7] font-sans text-gray-600 selection:bg-rose-200">
-      <div className="max-w-md mx-auto min-h-screen bg-white/50 shadow-2xl overflow-hidden relative backdrop-blur-3xl">
-        <div className="relative z-10 px-6 pt-6 h-screen overflow-y-auto no-scrollbar">
-          {activeTab === 'dashboard' && <Dashboard logs={logs} onNavigate={setActiveTab} />}
-          {activeTab === 'log' && <Logger addLog={addLog} onCancel={() => setActiveTab('dashboard')} />}
-          {activeTab === 'analysis' && <Analysis />}
-          {activeTab === 'community' && <Community />}
+    <div className="min-h-screen bg-[#FAFAFA] text-gray-900 font-sans pb-32">
+      <div className="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative overflow-hidden">
+        
+        {/* Main Content Area */}
+        <div className="p-6">
+          {renderContent()}
         </div>
-        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 max-w-md w-full bg-white/80 backdrop-blur-xl border-t border-gray-100 px-8 py-5 flex justify-between items-center z-50 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+          <NavButton 
+            icon={<Activity size={22} />} 
+            label="สถิติ" 
+            active={activeTab === 'dashboard'} 
+            onClick={() => setActiveTab('dashboard')} 
+          />
+          <NavButton 
+            icon={<PlusCircle size={22} />} 
+            label="บันทึก" 
+            active={activeTab === 'log'} 
+            onClick={() => setActiveTab('log')} 
+          />
+          <NavButton 
+            icon={<BarChart2 size={22} />} 
+            label="วิเคราะห์" 
+            active={activeTab === 'insight'} 
+            onClick={() => setActiveTab('insight')} 
+          />
+          <NavButton 
+            icon={<Users size={22} />} 
+            label="ชุมชน" 
+            active={activeTab === 'community'} 
+            onClick={() => setActiveTab('community')} 
+          />
+        </div>
       </div>
+
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fade-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .animate-slide-up { animation: fade-in 0.4s ease-out; }
       `}</style>
     </div>
   );
 };
 
 export default App;
-
 
