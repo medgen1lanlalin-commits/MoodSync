@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   Utensils, 
@@ -12,14 +12,19 @@ import {
   Plus, 
   ChevronRight, 
   Info, 
-  Calendar,
   Award,
   AlertCircle,
-  Clock
+  TrendingUp,
+  MessageCircle,
+  ArrowRight
 } from 'lucide-react';
 
+// --- Main App Component ---
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [user, setUser] = useState({ name: 'User', happinessScore: 78 });
+  
+  // State for Logs
   const [moodLogs, setMoodLogs] = useState([
     { id: 1, time: '08:00', level: 4, label: 'สดชื่น', date: '2023-10-25' },
     { id: 2, time: '12:30', level: 2, label: 'เหนื่อยล้า', date: '2023-10-25' },
@@ -27,23 +32,44 @@ const App = () => {
   ]);
   
   const [foodLogs, setFoodLogs] = useState([
-    { id: 1, name: 'โยเกิร์ตธรรมชาติ', nutrients: ['Probiotics'], time: '08:15' },
-    { id: 2, name: 'แซลมอนย่าง', nutrients: ['B12', 'Omega-3'], time: '12:45' },
+    { id: 1, name: 'โยเกิร์ตธรรมชาติ', nutrients: ['Probiotics'], time: '08:15', date: '2023-10-25' },
+    { id: 2, name: 'แซลมอนย่าง', nutrients: ['B12', 'Omega-3'], time: '12:45', date: '2023-10-25' },
   ]);
 
-  const [currentMood, setCurrentMood] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [lastMood, setLastMood] = useState(moodLogs[moodLogs.length - 1]);
 
-  // สถิติจำลองสำหรับ AI Insight
-  const happinessIndex = 78;
-  const sugarSpikeRisk = "Low";
+  // Function to add new log
+  const addMoodLog = (level, label) => {
+    const newLog = {
+      id: Date.now(),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      level,
+      label,
+      date: new Date().toISOString().split('T')[0]
+    };
+    setMoodLogs([...moodLogs, newLog]);
+    setLastMood(newLog);
+    setActiveTab('dashboard');
+  };
+
+  const addFoodLog = (name, selectedNutrients) => {
+    const newFood = {
+      id: Date.now(),
+      name,
+      nutrients: selectedNutrients,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: new Date().toISOString().split('T')[0]
+    };
+    setFoodLogs([...foodLogs, newFood]);
+    setActiveTab('dashboard');
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard moodLogs={moodLogs} foodLogs={foodLogs} happinessIndex={happinessIndex} />;
+        return <Dashboard moodLogs={moodLogs} foodLogs={foodLogs} lastMood={lastMood} score={user.happinessScore} />;
       case 'log':
-        return <LoggingSection setMoodLogs={setMoodLogs} setFoodLogs={setFoodLogs} />;
+        return <LoggingSection onMoodSubmit={addMoodLog} onFoodSubmit={addFoodLog} />;
       case 'insight':
         return <InsightAnalysis moodLogs={moodLogs} foodLogs={foodLogs} />;
       case 'community':
@@ -54,29 +80,34 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-pink-50 text-slate-800 font-sans pb-24">
+    <div className="min-h-screen bg-[#FFF5F7] text-slate-800 font-sans pb-24 selection:bg-pink-200">
       {/* Header */}
-      <header className="p-6 bg-white rounded-b-3xl shadow-sm flex justify-between items-center">
+      <header className="p-6 bg-white rounded-b-[2.5rem] shadow-sm flex justify-between items-center sticky top-0 z-50">
         <div>
-          <h1 className="text-2xl font-bold text-pink-500">MoodBites</h1>
-          <p className="text-xs text-slate-400">ลำไส้ดี อารมณ์เด่น สุขภาพยืนยาว</p>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-pink-200">
+              <Heart size={18} fill="currentColor" />
+            </div>
+            <h1 className="text-2xl font-black text-pink-500 tracking-tight">MoodBites</h1>
+          </div>
+          <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">Nutritional Psychology</p>
         </div>
-        <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 border-2 border-pink-200">
-          <Heart size={20} fill="currentColor" />
+        <div className="w-10 h-10 rounded-full bg-pink-100 border-2 border-white shadow-sm flex items-center justify-center text-pink-500 overflow-hidden">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="p-4 max-w-md mx-auto">
+      <main className="p-5 max-w-md mx-auto">
         {renderContent()}
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-pink-100 flex justify-around p-4 rounded-t-3xl shadow-lg">
-        <NavButton icon={<LineChart size={24} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-        <NavButton icon={<Plus size={24} />} label="Log" active={activeTab === 'log'} onClick={() => setActiveTab('log')} />
-        <NavButton icon={<Zap size={24} />} label="Insights" active={activeTab === 'insight'} onClick={() => setActiveTab('insight')} />
-        <NavButton icon={<Users size={24} />} label="Feed" active={activeTab === 'community'} onClick={() => setActiveTab('community')} />
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/80 backdrop-blur-xl border border-white shadow-[0_20px_50px_rgba(244,114,182,0.2)] flex justify-around p-3 rounded-[2rem] z-50">
+        <NavButton icon={<LineChart size={22} />} label="สถิติ" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
+        <NavButton icon={<Plus size={22} />} label="บันทึก" active={activeTab === 'log'} onClick={() => setActiveTab('log')} />
+        <NavButton icon={<Zap size={22} />} label="วิเคราะห์" active={activeTab === 'insight'} onClick={() => setActiveTab('insight')} />
+        <NavButton icon={<Users size={22} />} label="ชุมชน" active={activeTab === 'community'} onClick={() => setActiveTab('community')} />
       </nav>
     </div>
   );
@@ -85,501 +116,235 @@ const App = () => {
 const NavButton = ({ icon, label, active, onClick }) => (
   <button 
     onClick={onClick}
-    className={`flex flex-col items-center gap-1 transition-colors ${active ? 'text-pink-500' : 'text-slate-400'}`}
+    className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 ${active ? 'bg-pink-500 text-white shadow-lg shadow-pink-200 scale-105' : 'text-slate-400 hover:bg-pink-50'}`}
   >
     {icon}
-    <span className="text-[10px] font-medium">{label}</span>
+    <span className="text-[10px] font-bold uppercase tracking-tighter">{label}</span>
   </button>
 );
 
-const Dashboard = ({ moodLogs, foodLogs, happinessIndex }) => (
-  <div className="space-y-6 animate-in fade-in duration-500">
-    {/* Daily Summary Card */}
-    <div className="bg-gradient-to-br from-pink-400 to-rose-400 p-6 rounded-3xl text-white shadow-md relative overflow-hidden">
-      <div className="relative z-10">
-        <p className="text-pink-100 text-sm">ดัชนีความสุขจากอาหารวันนี้</p>
-        <div className="flex items-end gap-2 mt-1">
-          <span className="text-4xl font-bold">{happinessIndex}</span>
-          <span className="mb-1 text-pink-100">/ 100</span>
-        </div>
-        <div className="mt-4 flex gap-2">
-          <div className="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">น้ำตาลเสถียรดีมาก</div>
-          <div className="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">Gut-Health ปกติ</div>
-        </div>
-      </div>
-      <Heart className="absolute -right-4 -bottom-4 text-white/10 w-32 h-32 rotate-12" />
-    </div>
+const Dashboard = ({ moodLogs, foodLogs, lastMood, score }) => {
+  // Logic for Meal Suggestions based on last mood
+  const getRecommendation = () => {
+    if (!lastMood) return { title: "กำลังวิเคราะห์ข้อมูล...", desc: "เริ่มบันทึกอารมณ์ของคุณวันนี้" };
+    if (lastMood.level <= 2) return { 
+      tag: "Energy Boost", 
+      title: "ข้าวไรซ์เบอร์รี่อกไก่และถั่วอัลมอนด์", 
+      desc: "อารมณ์เหนื่อยล้าต้องการ Low GI เพื่อรักษาระดับพลังงานให้คงที่" 
+    };
+    if (lastMood.level === 3) return { 
+      tag: "Gut Health", 
+      title: "กรีกโยเกิร์ตพร้อมเบอร์รี่รวม", 
+      desc: "เติม Probiotics เพื่อกระตุ้น Gut-Brain Axis ให้รู้สึกสดชื่นขึ้น" 
+    };
+    return { 
+      tag: "Maintain Happiness", 
+      title: "สลัดควินัวและดาร์กช็อกโกแลต", 
+      desc: "แมกนีเซียมและสารต้านอนุมูลอิสระช่วยรักษาอารมณ์ดีให้ยาวนาน" 
+    };
+  };
 
-    {/* Bio-Feedback Integration */}
-    <div className="bg-white p-4 rounded-2xl border border-pink-100 flex items-center justify-between shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
-          <Zap size={20} />
-        </div>
-        <div>
-          <h3 className="text-sm font-semibold">Real-time Stress (HRV)</h3>
-          <p className="text-[10px] text-slate-400">จาก Apple Watch: ปกติ</p>
-        </div>
-      </div>
-      <div className="text-right">
-        <span className="text-blue-500 font-bold">64ms</span>
-      </div>
-    </div>
-
-    {/* Nutritional Prescription */}
-    <div className="space-y-3">
-      <h2 className="text-lg font-bold flex items-center gap-2">
-        <Utensils size={20} className="text-pink-500" />
-        แนะนำเมนูเพื่ออารมณ์
-      </h2>
-      <div className="bg-white p-4 rounded-2xl border-l-4 border-l-pink-400 shadow-sm">
-        <div className="flex justify-between items-start">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded">Current Mood: Tired</span>
-            <h3 className="font-bold mt-1 text-slate-700 text-sm">ข้าวไรซ์เบอร์รี่อกไก่และถั่วอัลมอนด์</h3>
-            <p className="text-xs text-slate-500 mt-1">แนะนำ Low GI เพื่อรักษาระดับพลังงานให้คงที่ ลดอาการ Sugar Crash</p>
-          </div>
-          <ChevronRight className="text-slate-300" />
-        </div>
-      </div>
-    </div>
-
-    {/* Gut-Check Section */}
-    <div className="space-y-3">
-      <h2 className="text-lg font-bold flex items-center gap-2">
-        <Stomach size={20} className="text-pink-500" />
-        ลำไส้และสมอง (Gut-Check)
-      </h2>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white p-3 rounded-2xl border border-pink-100 flex items-center gap-2">
-          <div className="w-8 h-8 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-xs">90%</div>
-          <span className="text-[10px] font-medium">Serotonin ผลิตจากลำไส้</span>
-        </div>
-        <div className="bg-white p-3 rounded-2xl border border-pink-100 flex items-center gap-2">
-          <div className="w-8 h-8 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center">
-            <Info size={14} />
-          </div>
-          <span className="text-[10px] font-medium">จุลินทรีย์ส่งผลต่อกังวล</span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const LoggingSection = ({ setMoodLogs, setFoodLogs }) => {
-  const [selectedMood, setSelectedMood] = useState(3);
-  const [foodName, setFoodName] = useState('');
-  
-  const moods = [
-    { level: 1, icon: <Frown />, label: 'แย่มาก', color: 'bg-red-100 text-red-500' },
-    { level: 2, icon: <Meh />, label: 'เหนื่อยล้า', color: 'bg-orange-100 text-orange-500' },
-    { level: 3, icon: <Meh />, label: 'เฉยๆ', color: 'bg-slate-100 text-slate-500' },
-    { level: 4, icon: <Smile />, label: 'ดี', color: 'bg-blue-100 text-blue-500' },
-    { level: 5, icon: <Smile />, label: 'ดีมาก', color: 'bg-green-100 text-green-500' },
-  ];
+  const recommendation = getRecommendation();
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-pink-100">
-        <h2 className="text-lg font-bold mb-4">ตอนนี้คุณรู้สึกอย่างไร?</h2>
-        <div className="flex justify-between gap-2">
-          {moods.map((m) => (
-            <button
-              key={m.level}
-              onClick={() => setSelectedMood(m.level)}
-              className={`flex-1 flex flex-col items-center p-3 rounded-2xl transition-all ${
-                selectedMood === m.level ? 'bg-pink-500 text-white scale-110 shadow-md' : 'bg-slate-50 text-slate-400'
-              }`}
-            >
-              {m.icon}
-              <span className="text-[10px] mt-1">{m.label}</span>
-            </button>
-          ))}
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      {/* Daily Summary Card */}
+      <div className="bg-gradient-to-br from-pink-400 to-rose-500 p-7 rounded-[2.5rem] text-white shadow-xl shadow-pink-200 relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex justify-between items-start">
+            <p className="text-pink-100 text-sm font-medium">Food-Mood Index Today</p>
+            <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-md">
+              <TrendingUp size={16} />
+            </div>
+          </div>
+          <div className="flex items-end gap-2 mt-2">
+            <span className="text-5xl font-black">{score}</span>
+            <span className="mb-2 text-pink-100 font-bold">/ 100</span>
+          </div>
+          <div className="mt-6 flex gap-2">
+            <div className="bg-white/20 px-3 py-1.5 rounded-xl text-[10px] font-bold backdrop-blur-md border border-white/10 italic">#SugarStable</div>
+            <div className="bg-white/20 px-3 py-1.5 rounded-xl text-[10px] font-bold backdrop-blur-md border border-white/10 italic">#GutBalanced</div>
+          </div>
+        </div>
+        <Heart className="absolute -right-6 -bottom-6 text-white/10 w-40 h-40 rotate-12" />
+      </div>
+
+      {/* Bio-Feedback Integration */}
+      <div className="bg-white p-5 rounded-3xl border border-pink-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center shadow-inner">
+            <Zap size={24} />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-700">Real-time Stress (HRV)</h3>
+            <p className="text-[10px] font-bold text-blue-400 flex items-center gap-1 uppercase tracking-wider">
+              <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" /> Linked with Apple Watch
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <span className="text-xl font-black text-slate-700 italic">64<span className="text-xs ml-0.5">ms</span></span>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-pink-100">
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <Utensils size={18} className="text-pink-500" />
-          บันทึกอาหารมื้อนี้
+      {/* Nutritional Prescription */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-black flex items-center gap-2 text-slate-800">
+            <Utensils size={20} className="text-pink-500" />
+            เมนูแนะนำตามอารมณ์
+          </h2>
+          <span className="text-[10px] font-bold text-pink-400 underline">ดูทั้งหมด</span>
+        </div>
+        
+        <div className="bg-white p-5 rounded-3xl border-l-[6px] border-l-pink-400 shadow-sm hover:translate-x-1 transition-transform cursor-pointer">
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <span className="text-[9px] uppercase font-black text-pink-500 bg-pink-50 px-2 py-1 rounded-md ring-1 ring-pink-100">
+                Mood: {lastMood?.label || 'Unknown'}
+              </span>
+              <h3 className="font-bold text-slate-700 text-base">{recommendation.title}</h3>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">{recommendation.desc}</p>
+            </div>
+            <div className="bg-pink-50 p-2 rounded-full text-pink-400">
+              <ArrowRight size={18} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Gut-Check Section */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-black flex items-center gap-2 text-slate-800">
+          <Stomach size={20} className="text-pink-500" />
+          ลำไส้และสมอง (Gut-Check)
         </h2>
-        <div className="space-y-4">
-          <input 
-            type="text" 
-            placeholder="ชื่ออาหาร (เช่น สลัดแซลมอน)" 
-            className="w-full p-3 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-pink-400 outline-none text-sm"
-          />
-          
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">สารอาหารสำคัญที่พบ</p>
-          <div className="flex flex-wrap gap-2">
-            {['โพรไบโอติกส์', 'วิตามิน B6/B12', 'แมกนีเซียม', 'โอเมก้า 3', 'ไฟเบอร์สูง'].map(tag => (
-              <button key={tag} className="px-3 py-1.5 bg-pink-50 text-pink-500 text-[10px] font-bold rounded-full border border-pink-100 hover:bg-pink-500 hover:text-white transition-colors">
-                + {tag}
-              </button>
-            ))}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm space-y-2">
+            <div className="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center font-black text-xs">90%</div>
+            <p className="text-[11px] font-bold text-slate-600 leading-tight">Serotonin ผลิตที่ลำไส้</p>
           </div>
-
-          <div className="pt-4 border-t border-slate-50">
-            <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-500">
-              <Stomach size={14} /> Gut-Check
+          <div className="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm space-y-2">
+            <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+              <Info size={18} />
             </div>
-            <div className="flex gap-2">
-              <button className="flex-1 py-2 text-[10px] rounded-lg bg-slate-50 border border-slate-100 italic">ท้องอืด</button>
-              <button className="flex-1 py-2 text-[10px] rounded-lg bg-slate-50 border border-slate-100 italic">ขับถ่ายปกติ</button>
-              <button className="flex-1 py-2 text-[10px] rounded-lg bg-pink-50 border border-pink-200 text-pink-500 font-bold italic">เบาสบาย</button>
-            </div>
+            <p className="text-[11px] font-bold text-slate-600 leading-tight">จุลินทรีย์ส่งผลต่อความกังวล</p>
           </div>
-
-          <button className="w-full bg-pink-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-pink-200 hover:bg-pink-600 transition-colors">
-            บันทึกข้อมูล
-          </button>
         </div>
       </div>
     </div>
   );
 };
 
-const InsightAnalysis = () => (
-  <div className="space-y-6 animate-in fade-in duration-500">
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-pink-100">
-      <h2 className="font-bold text-lg mb-4 flex items-center justify-between">
-        AI Insights
-        <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded tracking-tighter">7 วันล่าสุด</span>
-      </h2>
-      
-      {/* Mock Chart Area */}
-      <div className="h-40 flex items-end justify-between gap-1 border-b border-slate-100 pb-2 relative">
-        <div className="absolute top-0 left-0 text-[8px] text-slate-400 flex flex-col h-full justify-between">
-          <span>Happiest</span>
-          <span>Tired</span>
-        </div>
-        {[40, 70, 45, 90, 65, 80, 75].map((h, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-            <div 
-              className="w-full bg-pink-300 rounded-t-lg transition-all hover:bg-pink-500 cursor-pointer relative"
-              style={{ height: `${h}%` }}
-            >
-              {h > 80 && <div className="absolute -top-6 left-1/2 -translate-x-1/2"><Award size={14} className="text-amber-500" /></div>}
-            </div>
-            <span className="text-[8px] text-slate-400">D{i+1}</span>
-          </div>
-        ))}
-      </div>
-      
-      <div className="mt-6 space-y-4">
-        <div className="flex items-start gap-3 bg-pink-50/50 p-3 rounded-2xl">
-          <div className="p-2 bg-pink-100 text-pink-500 rounded-lg"><Zap size={16} /></div>
-          <div>
-            <h4 className="text-sm font-bold">Food-Mood Correlation</h4>
-            <p className="text-xs text-slate-500">คุณมักจะมีอารมณ์ดีขึ้น 15% หลังจากทานอาหารที่มี <b>แมกนีเซียม</b> สูงในช่วงเย็น</p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3 bg-blue-50/50 p-3 rounded-2xl">
-          <div className="p-2 bg-blue-100 text-blue-500 rounded-lg"><AlertCircle size={16} /></div>
-          <div>
-            <h4 className="text-sm font-bold">Sugar Crash Alert</h4>
-            <p className="text-xs text-slate-500">พบอาการ "ง่วงซึม" บ่อยครั้งหลังทานแป้งขัดขาวในมื้อเที่ยง แนะนำเปลี่ยนเป็น Complex Carbs</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Health Screening */}
-    <div className="bg-white p-4 rounded-2xl border border-red-50 flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-red-500 font-bold text-sm">
-        <Heart size={16} /> แบบประเมินสุขภาพจิตเบื้องต้น
-      </div>
-      <p className="text-xs text-slate-500 leading-relaxed">
-        ในช่วง 2 สัปดาห์ที่ผ่านมา คุณรู้สึกหดหู่หรือท้อแท้บ่อยแค่ไหน? ข้อมูลนี้จะช่วยคัดกรองความเสี่ยงภาวะซึมเศร้าควบคู่กับพฤติกรรมการกิน
-      </p>
-      <button className="text-xs font-bold text-slate-500 underline text-left">เริ่มทำแบบทดสอบ PHQ-9</button>
-    </div>
-  </div>
-);
-
-const CommunitySpace = () => (
-  <div className="space-y-6 animate-in fade-in duration-500">
-    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-      {['#MenuForAnxiety', '#MondayMotivation', '#GutHealthy', '#SugarFree'].map(tag => (
-        <span key={tag} className="flex-shrink-0 px-4 py-2 bg-white border border-pink-100 rounded-full text-xs font-medium text-slate-600 shadow-sm">
-          {tag}
-        </span>
-      ))}
-    </div>
-
-    <div className="space-y-4">
-      {[
-        { user: "K. Nam", dish: "Berry Smoothie Bowl", tags: ["#EnergyBoost"], likes: 124, img: "🍓" },
-        { user: "Dr. Nutri", dish: "Tempeh Salad with Nuts", tags: ["#GutBrainAxis"], likes: 450, img: "🥗" },
-      ].map((post, i) => (
-        <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-pink-50">
-          <div className="p-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-pink-100 border-2 border-white flex items-center justify-center text-xs font-bold text-pink-500">
-              {post.user[0]}
-            </div>
-            <div>
-              <p className="text-xs font-bold">{post.user}</p>
-              <p className="text-[10px] text-slate-400">2 ชั่วโมงที่แล้ว</p>
-            </div>
-          </div>
-          <div className="h-48 bg-pink-50 flex items-center justify-center text-6xl">
-            {post.img}
-          </div>
-          <div className="p-4">
-            <h3 className="font-bold text-sm mb-1">{post.dish}</h3>
-            <div className="flex gap-2 mb-3">
-              {post.tags.map(t => <span key={t} className="text-[10px] text-pink-500 font-bold">{t}</span>)}
-            </div>
-            <div className="flex items-center justify-between border-t pt-3">
-              <div className="flex items-center gap-1 text-slate-400 text-xs">
-                <Heart size={14} className="text-rose-400" fill="currentColor" /> {post.likes}
-              </div>
-              <button className="text-[10px] font-bold text-pink-500 uppercase">ดูสูตรอาหาร</button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-export default App;
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Heart, 
-  Utensils, 
-  LineChart, 
-  Users, 
-  Smile, 
-  Frown, 
-  Meh, 
-  Zap, 
-  Stomach, 
-  Plus, 
-  ChevronRight, 
-  Info, 
-  Calendar,
-  Award,
-  AlertCircle,
-  Clock
-} from 'lucide-react';
-
-const App = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [moodLogs, setMoodLogs] = useState([
-    { id: 1, time: '08:00', level: 4, label: 'สดชื่น', date: '2023-10-25' },
-    { id: 2, time: '12:30', level: 2, label: 'เหนื่อยล้า', date: '2023-10-25' },
-    { id: 3, time: '18:00', level: 5, label: 'มีความสุข', date: '2023-10-25' },
-  ]);
+const LoggingSection = ({ onMoodSubmit, onFoodSubmit }) => {
+  const [selectedMood, setSelectedMood] = useState(3);
+  const [foodName, setFoodName] = useState('');
+  const [selectedNutrients, setSelectedNutrients] = useState([]);
   
-  const [foodLogs, setFoodLogs] = useState([
-    { id: 1, name: 'โยเกิร์ตธรรมชาติ', nutrients: ['Probiotics'], time: '08:15' },
-    { id: 2, name: 'แซลมอนย่าง', nutrients: ['B12', 'Omega-3'], time: '12:45' },
-  ]);
+  const moods = [
+    { level: 1, icon: <Frown />, label: 'แย่มาก', sub: 'Low Energy' },
+    { level: 2, icon: <Meh />, label: 'เหนื่อยล้า', sub: 'Tired' },
+    { level: 3, icon: <Meh />, label: 'เฉยๆ', sub: 'Neutral' },
+    { level: 4, icon: <Smile />, label: 'ดี', sub: 'Fresh' },
+    { level: 5, icon: <Smile />, label: 'ดีมาก', sub: 'Happy' },
+  ];
 
-  const [currentMood, setCurrentMood] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const nutrients = ['โพรไบโอติกส์', 'วิตามิน B6/B12', 'แมกนีเซียม', 'โอเมก้า 3', 'ไฟเบอร์สูง'];
 
-  // สถิติจำลองสำหรับ AI Insight
-  const happinessIndex = 78;
-  const sugarSpikeRisk = "Low";
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard moodLogs={moodLogs} foodLogs={foodLogs} happinessIndex={happinessIndex} />;
-      case 'log':
-        return <LoggingSection setMoodLogs={setMoodLogs} setFoodLogs={setFoodLogs} />;
-      case 'insight':
-        return <InsightAnalysis moodLogs={moodLogs} foodLogs={foodLogs} />;
-      case 'community':
-        return <CommunitySpace />;
-      default:
-        return <Dashboard />;
+  const toggleNutrient = (n) => {
+    if (selectedNutrients.includes(n)) {
+      setSelectedNutrients(selectedNutrients.filter(item => item !== n));
+    } else {
+      setSelectedNutrients([...selectedNutrients, n]);
     }
   };
 
   return (
-    <div className="min-h-screen bg-pink-50 text-slate-800 font-sans pb-24">
-      {/* Header */}
-      <header className="p-6 bg-white rounded-b-3xl shadow-sm flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-pink-500">MoodBites</h1>
-          <p className="text-xs text-slate-400">ลำไส้ดี อารมณ์เด่น สุขภาพยืนยาว</p>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 border-2 border-pink-200">
-          <Heart size={20} fill="currentColor" />
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-4 max-w-md mx-auto">
-        {renderContent()}
-      </main>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-pink-100 flex justify-around p-4 rounded-t-3xl shadow-lg">
-        <NavButton icon={<LineChart size={24} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-        <NavButton icon={<Plus size={24} />} label="Log" active={activeTab === 'log'} onClick={() => setActiveTab('log')} />
-        <NavButton icon={<Zap size={24} />} label="Insights" active={activeTab === 'insight'} onClick={() => setActiveTab('insight')} />
-        <NavButton icon={<Users size={24} />} label="Feed" active={activeTab === 'community'} onClick={() => setActiveTab('community')} />
-      </nav>
-    </div>
-  );
-};
-
-const NavButton = ({ icon, label, active, onClick }) => (
-  <button 
-    onClick={onClick}
-    className={`flex flex-col items-center gap-1 transition-colors ${active ? 'text-pink-500' : 'text-slate-400'}`}
-  >
-    {icon}
-    <span className="text-[10px] font-medium">{label}</span>
-  </button>
-);
-
-const Dashboard = ({ moodLogs, foodLogs, happinessIndex }) => (
-  <div className="space-y-6 animate-in fade-in duration-500">
-    {/* Daily Summary Card */}
-    <div className="bg-gradient-to-br from-pink-400 to-rose-400 p-6 rounded-3xl text-white shadow-md relative overflow-hidden">
-      <div className="relative z-10">
-        <p className="text-pink-100 text-sm">ดัชนีความสุขจากอาหารวันนี้</p>
-        <div className="flex items-end gap-2 mt-1">
-          <span className="text-4xl font-bold">{happinessIndex}</span>
-          <span className="mb-1 text-pink-100">/ 100</span>
-        </div>
-        <div className="mt-4 flex gap-2">
-          <div className="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">น้ำตาลเสถียรดีมาก</div>
-          <div className="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">Gut-Health ปกติ</div>
-        </div>
-      </div>
-      <Heart className="absolute -right-4 -bottom-4 text-white/10 w-32 h-32 rotate-12" />
-    </div>
-
-    {/* Bio-Feedback Integration */}
-    <div className="bg-white p-4 rounded-2xl border border-pink-100 flex items-center justify-between shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
-          <Zap size={20} />
-        </div>
-        <div>
-          <h3 className="text-sm font-semibold">Real-time Stress (HRV)</h3>
-          <p className="text-[10px] text-slate-400">จาก Apple Watch: ปกติ</p>
-        </div>
-      </div>
-      <div className="text-right">
-        <span className="text-blue-500 font-bold">64ms</span>
-      </div>
-    </div>
-
-    {/* Nutritional Prescription */}
-    <div className="space-y-3">
-      <h2 className="text-lg font-bold flex items-center gap-2">
-        <Utensils size={20} className="text-pink-500" />
-        แนะนำเมนูเพื่ออารมณ์
-      </h2>
-      <div className="bg-white p-4 rounded-2xl border-l-4 border-l-pink-400 shadow-sm">
-        <div className="flex justify-between items-start">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded">Current Mood: Tired</span>
-            <h3 className="font-bold mt-1 text-slate-700 text-sm">ข้าวไรซ์เบอร์รี่อกไก่และถั่วอัลมอนด์</h3>
-            <p className="text-xs text-slate-500 mt-1">แนะนำ Low GI เพื่อรักษาระดับพลังงานให้คงที่ ลดอาการ Sugar Crash</p>
-          </div>
-          <ChevronRight className="text-slate-300" />
-        </div>
-      </div>
-    </div>
-
-    {/* Gut-Check Section */}
-    <div className="space-y-3">
-      <h2 className="text-lg font-bold flex items-center gap-2">
-        <Stomach size={20} className="text-pink-500" />
-        ลำไส้และสมอง (Gut-Check)
-      </h2>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white p-3 rounded-2xl border border-pink-100 flex items-center gap-2">
-          <div className="w-8 h-8 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-xs">90%</div>
-          <span className="text-[10px] font-medium">Serotonin ผลิตจากลำไส้</span>
-        </div>
-        <div className="bg-white p-3 rounded-2xl border border-pink-100 flex items-center gap-2">
-          <div className="w-8 h-8 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center">
-            <Info size={14} />
-          </div>
-          <span className="text-[10px] font-medium">จุลินทรีย์ส่งผลต่อกังวล</span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const LoggingSection = ({ setMoodLogs, setFoodLogs }) => {
-  const [selectedMood, setSelectedMood] = useState(3);
-  const [foodName, setFoodName] = useState('');
-  
-  const moods = [
-    { level: 1, icon: <Frown />, label: 'แย่มาก', color: 'bg-red-100 text-red-500' },
-    { level: 2, icon: <Meh />, label: 'เหนื่อยล้า', color: 'bg-orange-100 text-orange-500' },
-    { level: 3, icon: <Meh />, label: 'เฉยๆ', color: 'bg-slate-100 text-slate-500' },
-    { level: 4, icon: <Smile />, label: 'ดี', color: 'bg-blue-100 text-blue-500' },
-    { level: 5, icon: <Smile />, label: 'ดีมาก', color: 'bg-green-100 text-green-500' },
-  ];
-
-  return (
-    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-pink-100">
-        <h2 className="text-lg font-bold mb-4">ตอนนี้คุณรู้สึกอย่างไร?</h2>
-        <div className="flex justify-between gap-2">
+    <div className="space-y-6 animate-in slide-in-from-bottom-8 duration-500">
+      {/* Mood Picker */}
+      <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-pink-100">
+        <h2 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+           ตอนนี้คุณรู้สึกอย่างไร? <div className="w-2 h-2 rounded-full bg-pink-400" />
+        </h2>
+        <div className="flex justify-between gap-2 overflow-x-auto pb-2 px-1">
           {moods.map((m) => (
             <button
               key={m.level}
               onClick={() => setSelectedMood(m.level)}
-              className={`flex-1 flex flex-col items-center p-3 rounded-2xl transition-all ${
-                selectedMood === m.level ? 'bg-pink-500 text-white scale-110 shadow-md' : 'bg-slate-50 text-slate-400'
+              className={`flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-[2rem] transition-all duration-300 ${
+                selectedMood === m.level ? 'bg-pink-500 text-white shadow-xl shadow-pink-200 -translate-y-2' : 'bg-slate-50 text-slate-400'
               }`}
             >
-              {m.icon}
-              <span className="text-[10px] mt-1">{m.label}</span>
+              <div className={selectedMood === m.level ? 'scale-125 transition-transform' : ''}>
+                {m.icon}
+              </div>
+              <span className="text-[9px] font-black mt-3 uppercase tracking-tighter">{m.sub}</span>
             </button>
           ))}
         </div>
+        <button 
+          onClick={() => onMoodSubmit(selectedMood, moods.find(m => m.level === selectedMood).label)}
+          className="w-full mt-6 py-4 bg-slate-800 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-pink-600 transition-colors shadow-lg"
+        >
+          ยืนยันอารมณ์
+        </button>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-pink-100">
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <Utensils size={18} className="text-pink-500" />
+      {/* Food Logger */}
+      <div className="bg-white p-7 rounded-[2.5rem] shadow-sm border border-pink-100">
+        <h2 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+          <Utensils size={20} className="text-pink-500" />
           บันทึกอาหารมื้อนี้
         </h2>
-        <div className="space-y-4">
-          <input 
-            type="text" 
-            placeholder="ชื่ออาหาร (เช่น สลัดแซลมอน)" 
-            className="w-full p-3 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-pink-400 outline-none text-sm"
-          />
+        <div className="space-y-5">
+          <div className="relative">
+            <input 
+              type="text" 
+              value={foodName}
+              onChange={(e) => setFoodName(e.target.value)}
+              placeholder="ชื่ออาหาร (เช่น สลัดแซลมอน)" 
+              className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-pink-200 focus:bg-white outline-none text-sm font-medium transition-all"
+            />
+          </div>
           
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">สารอาหารสำคัญที่พบ</p>
-          <div className="flex flex-wrap gap-2">
-            {['โพรไบโอติกส์', 'วิตามิน B6/B12', 'แมกนีเซียม', 'โอเมก้า 3', 'ไฟเบอร์สูง'].map(tag => (
-              <button key={tag} className="px-3 py-1.5 bg-pink-50 text-pink-500 text-[10px] font-bold rounded-full border border-pink-100 hover:bg-pink-500 hover:text-white transition-colors">
-                + {tag}
-              </button>
-            ))}
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">สารอาหารสำคัญที่พบ</p>
+            <div className="flex flex-wrap gap-2">
+              {nutrients.map(tag => (
+                <button 
+                  key={tag} 
+                  onClick={() => toggleNutrient(tag)}
+                  className={`px-4 py-2 text-[10px] font-black rounded-xl transition-all border ${
+                    selectedNutrients.includes(tag) 
+                    ? 'bg-pink-500 text-white border-pink-500 shadow-md shadow-pink-100' 
+                    : 'bg-white text-slate-500 border-slate-100 hover:border-pink-200'
+                  }`}
+                >
+                  {selectedNutrients.includes(tag) ? '✓ ' : '+ '} {tag}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-50">
-            <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-500">
+          <div className="pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
               <Stomach size={14} /> Gut-Check
             </div>
             <div className="flex gap-2">
-              <button className="flex-1 py-2 text-[10px] rounded-lg bg-slate-50 border border-slate-100 italic">ท้องอืด</button>
-              <button className="flex-1 py-2 text-[10px] rounded-lg bg-slate-50 border border-slate-100 italic">ขับถ่ายปกติ</button>
-              <button className="flex-1 py-2 text-[10px] rounded-lg bg-pink-50 border border-pink-200 text-pink-500 font-bold italic">เบาสบาย</button>
+              {['ท้องอืด', 'ปกติ', 'เบาสบาย'].map(status => (
+                <button key={status} className="flex-1 py-2.5 text-[11px] font-bold rounded-xl bg-slate-50 border border-slate-100 text-slate-500 hover:bg-pink-50 hover:text-pink-500 hover:border-pink-200 transition-all">
+                  {status}
+                </button>
+              ))}
             </div>
           </div>
 
-          <button className="w-full bg-pink-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-pink-200 hover:bg-pink-600 transition-colors">
-            บันทึกข้อมูล
+          <button 
+            disabled={!foodName}
+            onClick={() => onFoodSubmit(foodName, selectedNutrients)}
+            className="w-full bg-pink-500 text-white py-5 rounded-[2rem] font-black text-sm uppercase tracking-[0.15em] shadow-xl shadow-pink-100 hover:bg-pink-600 disabled:opacity-50 transition-all active:scale-95"
+          >
+            บันทึกสารอาหาร
           </button>
         </div>
       </div>
@@ -588,102 +353,116 @@ const LoggingSection = ({ setMoodLogs, setFoodLogs }) => {
 };
 
 const InsightAnalysis = () => (
-  <div className="space-y-6 animate-in fade-in duration-500">
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-pink-100">
-      <h2 className="font-bold text-lg mb-4 flex items-center justify-between">
-        AI Insights
-        <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded tracking-tighter">7 วันล่าสุด</span>
-      </h2>
+  <div className="space-y-6 animate-in fade-in duration-700">
+    <div className="bg-white p-7 rounded-[2.5rem] shadow-sm border border-pink-100">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="font-black text-xl text-slate-800">AI Insights</h2>
+        <span className="text-[9px] font-black bg-blue-100 text-blue-600 px-3 py-1 rounded-full uppercase tracking-tighter">7 วันล่าสุด</span>
+      </div>
       
-      {/* Mock Chart Area */}
-      <div className="h-40 flex items-end justify-between gap-1 border-b border-slate-100 pb-2 relative">
-        <div className="absolute top-0 left-0 text-[8px] text-slate-400 flex flex-col h-full justify-between">
+      {/* Mock Chart */}
+      <div className="h-44 flex items-end justify-between gap-2 border-b-2 border-slate-50 pb-4 relative">
+        <div className="absolute -left-2 top-0 h-full flex flex-col justify-between text-[8px] font-black text-slate-300 pointer-events-none uppercase">
           <span>Happiest</span>
           <span>Tired</span>
         </div>
         {[40, 70, 45, 90, 65, 80, 75].map((h, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+          <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
             <div 
-              className="w-full bg-pink-300 rounded-t-lg transition-all hover:bg-pink-500 cursor-pointer relative"
+              className={`w-full rounded-t-xl transition-all duration-500 cursor-pointer relative ${h > 80 ? 'bg-pink-500 shadow-lg shadow-pink-200' : 'bg-pink-200 group-hover:bg-pink-300'}`}
               style={{ height: `${h}%` }}
             >
-              {h > 80 && <div className="absolute -top-6 left-1/2 -translate-x-1/2"><Award size={14} className="text-amber-500" /></div>}
+              {h > 80 && <div className="absolute -top-7 left-1/2 -translate-x-1/2"><Award size={18} className="text-amber-500 animate-bounce" /></div>}
             </div>
-            <span className="text-[8px] text-slate-400">D{i+1}</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Day {i+1}</span>
           </div>
         ))}
       </div>
       
-      <div className="mt-6 space-y-4">
-        <div className="flex items-start gap-3 bg-pink-50/50 p-3 rounded-2xl">
-          <div className="p-2 bg-pink-100 text-pink-500 rounded-lg"><Zap size={16} /></div>
+      <div className="mt-8 space-y-4">
+        <div className="flex items-start gap-4 bg-pink-50/50 p-4 rounded-3xl border border-pink-100/50">
+          <div className="w-10 h-10 bg-pink-100 text-pink-500 rounded-2xl flex items-center justify-center flex-shrink-0"><Zap size={20} /></div>
           <div>
-            <h4 className="text-sm font-bold">Food-Mood Correlation</h4>
-            <p className="text-xs text-slate-500">คุณมักจะมีอารมณ์ดีขึ้น 15% หลังจากทานอาหารที่มี <b>แมกนีเซียม</b> สูงในช่วงเย็น</p>
+            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">ความสัมพันธ์เชิงบวก</h4>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">คุณมักจะมีอารมณ์ดีขึ้น <span className="text-pink-500 font-bold">15%</span> หลังจากทานอาหารที่มี <span className="underline decoration-pink-200">แมกนีเซียม</span> สูงในช่วงเย็น</p>
           </div>
         </div>
 
-        <div className="flex items-start gap-3 bg-blue-50/50 p-3 rounded-2xl">
-          <div className="p-2 bg-blue-100 text-blue-500 rounded-lg"><AlertCircle size={16} /></div>
+        <div className="flex items-start gap-4 bg-blue-50/50 p-4 rounded-3xl border border-blue-100/50">
+          <div className="w-10 h-10 bg-blue-100 text-blue-500 rounded-2xl flex items-center justify-center flex-shrink-0"><AlertCircle size={20} /></div>
           <div>
-            <h4 className="text-sm font-bold">Sugar Crash Alert</h4>
-            <p className="text-xs text-slate-500">พบอาการ "ง่วงซึม" บ่อยครั้งหลังทานแป้งขัดขาวในมื้อเที่ยง แนะนำเปลี่ยนเป็น Complex Carbs</p>
+            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">คำเตือน Sugar Crash</h4>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">พบอาการ "ง่วงซึม" บ่อยครั้งหลังทานแป้งขัดขาวในมื้อเที่ยง แนะนำเปลี่ยนเป็น <span className="text-blue-500 font-bold">Complex Carbs</span></p>
           </div>
         </div>
       </div>
     </div>
 
     {/* Health Screening */}
-    <div className="bg-white p-4 rounded-2xl border border-red-50 flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-red-500 font-bold text-sm">
-        <Heart size={16} /> แบบประเมินสุขภาพจิตเบื้องต้น
+    <div className="bg-white p-6 rounded-[2rem] border-2 border-dashed border-pink-200 flex flex-col gap-4 text-center">
+      <div className="flex justify-center">
+        <div className="p-3 bg-red-50 rounded-full text-red-500">
+          <Heart size={24} />
+        </div>
       </div>
-      <p className="text-xs text-slate-500 leading-relaxed">
-        ในช่วง 2 สัปดาห์ที่ผ่านมา คุณรู้สึกหดหู่หรือท้อแท้บ่อยแค่ไหน? ข้อมูลนี้จะช่วยคัดกรองความเสี่ยงภาวะซึมเศร้าควบคู่กับพฤติกรรมการกิน
-      </p>
-      <button className="text-xs font-bold text-slate-500 underline text-left">เริ่มทำแบบทดสอบ PHQ-9</button>
+      <div className="space-y-1">
+        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">คัดกรองสุขภาพจิตเบื้องต้น</h3>
+        <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-[200px] mx-auto">
+          อารมณ์ที่แปรปรวนอาจสัมพันธ์กับการกิน เริ่มทำแบบทดสอบ PHQ-9 เพื่อวิเคราะห์เชิงลึก
+        </p>
+      </div>
+      <button className="py-3 bg-slate-50 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border border-slate-200 hover:bg-slate-100 transition-colors">
+        เริ่มทำแบบประเมิน
+      </button>
     </div>
   </div>
 );
 
 const CommunitySpace = () => (
-  <div className="space-y-6 animate-in fade-in duration-500">
-    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+  <div className="space-y-6 animate-in fade-in duration-700">
+    <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide px-1">
       {['#MenuForAnxiety', '#MondayMotivation', '#GutHealthy', '#SugarFree'].map(tag => (
-        <span key={tag} className="flex-shrink-0 px-4 py-2 bg-white border border-pink-100 rounded-full text-xs font-medium text-slate-600 shadow-sm">
+        <span key={tag} className="flex-shrink-0 px-5 py-2.5 bg-white border border-pink-100 rounded-2xl text-[10px] font-black text-slate-600 shadow-sm uppercase tracking-tighter">
           {tag}
         </span>
       ))}
     </div>
 
-    <div className="space-y-4">
+    <div className="space-y-6">
       {[
-        { user: "K. Nam", dish: "Berry Smoothie Bowl", tags: ["#EnergyBoost"], likes: 124, img: "🍓" },
-        { user: "Dr. Nutri", dish: "Tempeh Salad with Nuts", tags: ["#GutBrainAxis"], likes: 450, img: "🥗" },
+        { user: "K. Nam", dish: "Berry Smoothie Bowl", tags: ["#EnergyBoost"], likes: 124, emoji: "🍓", color: "bg-rose-50" },
+        { user: "Dr. Nutri", dish: "Tempeh Salad with Nuts", tags: ["#GutBrainAxis"], likes: 450, emoji: "🥗", color: "bg-emerald-50" },
       ].map((post, i) => (
-        <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-pink-50">
-          <div className="p-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-pink-100 border-2 border-white flex items-center justify-center text-xs font-bold text-pink-500">
-              {post.user[0]}
-            </div>
-            <div>
-              <p className="text-xs font-bold">{post.user}</p>
-              <p className="text-[10px] text-slate-400">2 ชั่วโมงที่แล้ว</p>
-            </div>
-          </div>
-          <div className="h-48 bg-pink-50 flex items-center justify-center text-6xl">
-            {post.img}
-          </div>
-          <div className="p-4">
-            <h3 className="font-bold text-sm mb-1">{post.dish}</h3>
-            <div className="flex gap-2 mb-3">
-              {post.tags.map(t => <span key={t} className="text-[10px] text-pink-500 font-bold">{t}</span>)}
-            </div>
-            <div className="flex items-center justify-between border-t pt-3">
-              <div className="flex items-center gap-1 text-slate-400 text-xs">
-                <Heart size={14} className="text-rose-400" fill="currentColor" /> {post.likes}
+        <div key={i} className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-pink-50 group hover:shadow-xl transition-all duration-500">
+          <div className="p-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-400 to-rose-400 flex items-center justify-center text-xs font-black text-white shadow-md">
+                {post.user[0]}
               </div>
-              <button className="text-[10px] font-bold text-pink-500 uppercase">ดูสูตรอาหาร</button>
+              <div>
+                <p className="text-sm font-black text-slate-800">{post.user}</p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Expert Contributor</p>
+              </div>
+            </div>
+            <button className="text-slate-300 hover:text-pink-500 transition-colors">
+              <MessageCircle size={20} />
+            </button>
+          </div>
+          <div className={`h-52 ${post.color} flex items-center justify-center text-7xl group-hover:scale-105 transition-transform duration-700`}>
+            {post.emoji}
+          </div>
+          <div className="p-6">
+            <h3 className="font-black text-slate-800 text-lg mb-2">{post.dish}</h3>
+            <div className="flex gap-2 mb-6">
+              {post.tags.map(t => <span key={t} className="text-[10px] text-pink-500 font-black uppercase tracking-widest">{t}</span>)}
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-50 pt-5">
+              <div className="flex items-center gap-2 text-slate-400 text-xs font-black">
+                <Heart size={18} className="text-rose-500 fill-rose-500" /> {post.likes}
+              </div>
+              <button className="px-5 py-2.5 bg-pink-50 text-pink-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-pink-500 hover:text-white transition-all">
+                ดูสูตรอาหาร
+              </button>
             </div>
           </div>
         </div>
@@ -691,4 +470,6 @@ const CommunitySpace = () => (
     </div>
   </div>
 );
+
 export default App;
+
