@@ -3,34 +3,41 @@ import {
   Heart, 
   Smile, 
   Meh, 
-  Frown,
+  Frown, 
+  Zap, 
   Activity, 
   Utensils, 
   Brain, 
   BarChart2, 
   Users, 
-  Watch,
-  PlusCircle,
-  TrendingUp,
-  AlertCircle,
-  ChevronRight,
-  Zap,
-  Info
+  Watch, 
+  PlusCircle, 
+  TrendingUp, 
+  AlertCircle, 
+  ChevronRight, 
+  Clock, 
+  CheckCircle2,
+  Coffee
 } from 'lucide-react';
 
 // --- Sub-Components ---
 
-// 1. Navigation Bar
+const ProgressBar = ({ value, colorClass = "bg-rose-400" }) => (
+  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+    <div className={`h-full ${colorClass} transition-all duration-1000`} style={{ width: `${value}%` }}></div>
+  </div>
+);
+
 const Navbar = ({ activeTab, setActiveTab }) => {
   const tabs = [
-    { id: 'dashboard', icon: <Activity size={20} />, label: 'สถิติ' },
-    { id: 'log', icon: <PlusCircle size={20} />, label: 'บันทึก' },
+    { id: 'dashboard', icon: <Activity size={20} />, label: 'ภาพรวม' },
+    { id: 'log', icon: <PlusCircle size={24} />, label: 'บันทึก' },
     { id: 'analysis', icon: <BarChart2 size={20} />, label: 'วิเคราะห์' },
     { id: 'community', icon: <Users size={20} />, label: 'ชุมชน' },
   ];
 
   return (
-    <div className="fixed bottom-0 max-w-md w-full bg-white/90 backdrop-blur-md border-t border-rose-100 px-6 py-4 flex justify-between items-center rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(255,182,193,0.15)] z-50">
+    <div className="fixed bottom-0 max-w-md w-full bg-white/80 backdrop-blur-xl border-t border-rose-50 px-6 py-4 flex justify-around items-center z-50 rounded-t-[2.5rem] shadow-2xl">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -39,7 +46,7 @@ const Navbar = ({ activeTab, setActiveTab }) => {
             activeTab === tab.id ? 'text-rose-500 scale-110' : 'text-gray-300 hover:text-rose-300'
           }`}
         >
-          <div className={`${activeTab === tab.id ? 'bg-rose-50 p-2 rounded-xl' : ''}`}>
+          <div className={activeTab === tab.id ? 'bg-rose-50 p-2 rounded-xl' : ''}>
             {tab.icon}
           </div>
           <span className="text-[10px] font-bold">{tab.label}</span>
@@ -49,178 +56,165 @@ const Navbar = ({ activeTab, setActiveTab }) => {
   );
 };
 
-// 2. Dashboard Component
-const Dashboard = ({ score, moodLogs, onNavigate }) => {
-  const lastMood = moodLogs[moodLogs.length - 1] || { level: 3, label: 'ปกติ' };
+// --- Main Pages ---
 
+const Dashboard = ({ onNavigate }) => {
   return (
-    <div className="space-y-6 pb-28 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* User Greeting */}
+    <div className="space-y-6 pb-28 animate-in fade-in duration-700">
       <div className="flex justify-between items-center pt-2">
         <div>
-          <h1 className="text-2xl font-black text-gray-800 tracking-tight">สวัสดีตอนเย็น 🌸</h1>
-          <p className="text-xs text-rose-400 font-bold uppercase tracking-widest">Mood-Nutri Dashboard</p>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">สวัสดี คุณแก้ม 🌸</h1>
+          <p className="text-xs text-rose-400 font-bold uppercase tracking-widest">MoodSync Bio-Syncing</p>
         </div>
-        <div className="w-11 h-11 bg-gradient-to-tr from-rose-300 to-pink-200 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white font-bold">N</div>
+        <div className="w-10 h-10 bg-gradient-to-tr from-rose-400 to-pink-200 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white font-bold">K</div>
       </div>
 
-      {/* Food-Mood Index Card */}
-      <div className="bg-white rounded-[2.5rem] p-6 shadow-xl shadow-rose-100/40 border border-rose-50 relative overflow-hidden">
+      {/* Food-Mood Index */}
+      <div className="bg-white rounded-[2.5rem] p-6 shadow-xl shadow-rose-100/50 border border-rose-50 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-6 opacity-10">
           <Brain size={80} className="text-rose-500" />
         </div>
         <div className="relative z-10">
-          <p className="text-gray-400 text-[10px] font-bold uppercase mb-1 tracking-wider">Food-Mood Index Today</p>
+          <p className="text-gray-400 text-[10px] font-bold uppercase mb-1">Food-Mood Index Today</p>
           <div className="flex items-end gap-2 mb-4">
-            <span className="text-6xl font-black text-gray-800">{score}</span>
+            <span className="text-6xl font-black text-gray-800">84</span>
             <span className="text-gray-400 font-bold mb-2">/ 100</span>
           </div>
           <div className="flex gap-2">
-            <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold border border-green-100">#SugarStable</span>
-            <span className="px-3 py-1 bg-rose-50 text-rose-500 rounded-full text-[10px] font-bold border border-rose-100">#GutHealthHigh</span>
+            <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold">#StableSugar</span>
+            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold">#SerotoninUp</span>
           </div>
         </div>
       </div>
 
-      {/* Bio-Feedback Integration (HRV) */}
-      <div className="bg-gray-900 rounded-[2.5rem] p-6 text-white shadow-2xl relative group">
-        <div className="flex justify-between items-start mb-6">
+      {/* Bio-Feedback: HRV Stress Level */}
+      <div className="bg-gray-900 rounded-[2.5rem] p-6 text-white shadow-2xl relative overflow-hidden group">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-              <h3 className="font-bold text-lg">Real-time Stress (HRV)</h3>
-            </div>
-            <p className="text-[10px] text-gray-400 flex items-center gap-1">
-              <Watch size={12} /> Syncing with Apple Watch
-            </p>
+            <h3 className="font-bold text-lg">Bio-Feedback (HRV)</h3>
+            <p className="text-[10px] text-gray-400 flex items-center gap-1"><Watch size={12} /> Apple Watch Connected</p>
           </div>
-          <Zap size={20} className="text-yellow-400" />
+          <Activity className="text-rose-400 animate-pulse" />
         </div>
         <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-4xl font-black tracking-tighter">64</span>
+          <span className="text-4xl font-black tracking-tighter">68</span>
           <span className="text-xs font-bold text-gray-500">ms</span>
-          <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-lg">สมดุลดี</span>
+          <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-bold">ภาวะสมดุล</span>
         </div>
-        <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-rose-500 to-orange-400 w-[64%]"></div>
-        </div>
+        <ProgressBar value={68} colorClass="bg-gradient-to-r from-rose-500 to-orange-400" />
       </div>
 
       {/* Nutritional Prescription */}
       <div className="space-y-4">
         <div className="flex justify-between items-center px-2">
-          <h3 className="font-black text-gray-800 text-lg">เมนูแนะนำตามอารมณ์ 🥗</h3>
-          <button className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">ดูทั้งหมด</button>
+          <h3 className="font-black text-gray-800 text-lg uppercase tracking-tight">Meal Recommendation</h3>
+          <button className="text-xs font-bold text-rose-500">ดูทั้งหมด</button>
         </div>
-        <div className="bg-rose-50/50 rounded-[2rem] p-5 border border-rose-100 hover:scale-[1.02] transition-transform cursor-pointer">
-          <div className="flex items-center gap-3 mb-3">
-             <div className="p-3 bg-white rounded-2xl shadow-sm text-rose-400">
-               <Brain size={24} />
-             </div>
-             <div>
-               <p className="text-[10px] font-bold text-rose-400 uppercase">Energy & Serotonin Boost</p>
-               <h4 className="font-bold text-gray-800 text-sm">สลัดคินัวและดาร์กช็อกโกแลต</h4>
-             </div>
+        <div className="bg-rose-50/50 rounded-[2rem] p-5 border border-rose-100 hover:shadow-lg transition-all cursor-pointer">
+          <div className="flex items-center gap-4">
+            <div className="bg-white p-3 rounded-2xl shadow-sm text-rose-400">
+              <Zap size={24} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold bg-white text-rose-500 px-2 py-0.5 rounded-md uppercase">Low GI</span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase">แก้เหนื่อยล้า</span>
+              </div>
+              <h4 className="font-bold text-gray-800 mt-1">โอ๊ตมีลกล้วยหอมและดาร์กช็อก</h4>
+              <p className="text-[11px] text-gray-500 leading-tight mt-1 opacity-80">แมกนีเซียมและคาร์โบไฮเดรตเชิงซ้อนช่วยรักษาระดับพลังงานให้คงที่</p>
+            </div>
           </div>
-          <p className="text-xs text-gray-500 leading-relaxed italic">
-            "แมกนีเซียมและสารต้านอนุมูลอิสระช่วยรักษาอารมณ์ดีให้ยาวนานและลดความเครียดสะสม"
-          </p>
         </div>
       </div>
     </div>
   );
 };
 
-// 3. Logger Component
 const Logger = ({ onSave }) => {
   const [step, setStep] = useState(1);
   const [mood, setMood] = useState(3);
   const [gutStatus, setGutStatus] = useState(3);
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 pb-24">
-      <div className="pt-4">
-        <h2 className="text-3xl font-black text-gray-800">บันทึกวันนี้ ✨</h2>
-        <p className="text-gray-400 font-medium">ขั้นตอนที่ {step} จาก 2</p>
+    <div className="space-y-6 pb-32 animate-in slide-in-from-right duration-500">
+      <div className="pt-4 px-2">
+        <h2 className="text-3xl font-black text-gray-800">Check-in ✨</h2>
+        <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">ขั้นตอน {step} / 2</p>
       </div>
 
       {step === 1 ? (
-        <div className="space-y-10">
+        <div className="space-y-8 px-2">
+          {/* Mood Section */}
           <section className="text-center">
-            <h3 className="text-lg font-bold text-gray-700 mb-6 italic">ตอนนี้รู้สึกอย่างไรคะ?</h3>
-            <div className="flex justify-between px-2">
-              {[1, 2, 3, 4, 5].map((lvl) => (
+            <p className="text-gray-600 font-bold mb-6 italic">ตอนนี้คุณรู้สึกอย่างไรคะ?</p>
+            <div className="flex justify-between items-center bg-white p-4 rounded-3xl shadow-sm border border-rose-50">
+              {[1, 2, 3, 4, 5].map((level) => (
                 <button
-                  key={lvl}
-                  onClick={() => setMood(lvl)}
-                  className={`flex flex-col items-center gap-2 transition-all ${mood === lvl ? 'scale-125' : 'opacity-40'}`}
+                  key={level}
+                  onClick={() => setMood(level)}
+                  className={`flex flex-col items-center gap-2 transition-all ${mood === level ? 'scale-125' : 'opacity-40 grayscale'}`}
                 >
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md ${
-                    mood === lvl ? 'bg-rose-400 text-white shadow-rose-200' : 'bg-white text-gray-400'
-                  }`}>
-                    {lvl === 1 && <Frown />}
-                    {lvl === 2 && <AlertCircle />}
-                    {lvl === 3 && <Meh />}
-                    {lvl === 4 && <Smile />}
-                    {lvl === 5 && <Heart />}
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${mood === level ? 'bg-rose-400 text-white shadow-lg' : 'bg-gray-50 text-gray-400'}`}>
+                    {level === 1 && <Frown size={24} />}
+                    {level === 2 && <AlertCircle size={24} />}
+                    {level === 3 && <Meh size={24} />}
+                    {level === 4 && <Smile size={24} />}
+                    {level === 5 && <Heart size={24} />}
                   </div>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase">Level {lvl}</span>
                 </button>
               ))}
             </div>
           </section>
 
-          <section className="bg-white p-6 rounded-[2.5rem] border border-rose-50 shadow-sm">
-             <div className="flex justify-between items-center mb-4">
-               <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                 <Utensils size={18} className="text-rose-400" /> Gut-Check (ลำไส้)
-               </h3>
-               <Info size={16} className="text-gray-300" />
-             </div>
-             <input 
-               type="range" min="1" max="5" value={gutStatus} 
-               onChange={(e) => setGutStatus(e.target.value)}
-               className="w-full accent-rose-400 h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer"
-             />
-             <div className="flex justify-between text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-tighter">
-               <span>อืด/แน่น</span>
-               <span>ปกติ</span>
-               <span>เบาสบาย</span>
-             </div>
+          {/* Gut-Check Section */}
+          <section className="bg-white p-6 rounded-[2.5rem] border border-rose-50 shadow-sm space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                <Brain size={18} className="text-rose-400" /> Gut-Check (ลำไส้)
+              </h3>
+              <span className="text-[10px] font-bold bg-rose-50 text-rose-500 px-2 py-1 rounded-lg uppercase tracking-wider">Gut-Brain Axis</span>
+            </div>
+            <input 
+              type="range" min="1" max="5" value={gutStatus} 
+              onChange={(e) => setGutStatus(e.target.value)}
+              className="w-full accent-rose-400 h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+              <span>ท้องอืด/แน่น</span>
+              <span>ปกติ</span>
+              <span>เบาสบาย</span>
+            </div>
           </section>
 
-          <button 
-            onClick={() => setStep(2)}
-            className="w-full bg-rose-400 text-white py-5 rounded-[2rem] font-black shadow-xl shadow-rose-100 hover:bg-rose-500 transition-all"
-          >
-            ต่อไป (บันทึกอาหาร)
+          <button onClick={() => setStep(2)} className="w-full bg-rose-400 text-white py-5 rounded-[2rem] font-black shadow-xl shadow-rose-100 hover:bg-rose-500 transition-all">
+            บันทึกอาหารต่อ 🥗
           </button>
         </div>
       ) : (
-        <div className="space-y-6">
-          <h3 className="text-lg font-bold text-gray-700 mb-2">กลุ่มสารอาหารที่ทาน:</h3>
+        <div className="space-y-6 px-2">
+          <h3 className="text-lg font-bold text-gray-700 mb-2">เน้นกลุ่มสารอาหารสำคัญ:</h3>
           <div className="grid grid-cols-1 gap-3">
             {[
-              { id: 'pro', label: 'Probiotics', sub: 'โยเกิร์ต, กิมจิ', icon: '🦠' },
-              { id: 'vit', label: 'Vit B6/B12', sub: 'ปลา, ไข่, ธัญพืช', icon: '🐟' },
-              { id: 'mag', label: 'Magnesium', sub: 'กล้วย, ดาร์กช็อก', icon: '🍫' },
-              { id: 'sugar', label: 'High Sugar/Carb', sub: 'ของหวาน, ขนมปังขาว', icon: '🍰' },
+              { id: 'pro', label: 'Probiotics', sub: 'โยเกิร์ต, กิมจิ', desc: 'บำรุงแกนลำไส้-สมอง', icon: '🦠' },
+              { id: 'vit', label: 'Vit B6/B12', sub: 'ปลา, ไข่, ตับ', desc: 'สังเคราะห์ความสุข', icon: '🐟' },
+              { id: 'mag', label: 'Magnesium', sub: 'ถั่ว, ดาร์กช็อก', desc: 'ลดเครียด/หลับสบาย', icon: '🍫' },
+              { id: 'sugar', label: 'High Sugar', sub: 'ชานม, เค้ก', desc: 'เสี่ยง Sugar Crash', icon: '🍰' },
             ].map((item) => (
-              <label key={item.id} className="flex items-center gap-4 p-5 bg-white border border-rose-50 rounded-[2rem] cursor-pointer hover:border-rose-200 transition-all">
-                <input type="checkbox" className="w-5 h-5 accent-rose-400" />
+              <label key={item.id} className="flex items-center gap-4 p-5 bg-white border border-rose-50 rounded-[2rem] cursor-pointer hover:border-rose-300 transition-all group">
+                <input type="checkbox" className="w-6 h-6 rounded-full border-rose-200 accent-rose-400" />
                 <span className="text-2xl">{item.icon}</span>
-                <div>
-                  <p className="font-bold text-gray-800 text-sm">{item.label}</p>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <p className="font-bold text-gray-800 text-sm">{item.label}</p>
+                    <span className="text-[9px] font-bold text-rose-300 uppercase">{item.desc}</span>
+                  </div>
                   <p className="text-[10px] text-gray-400 uppercase font-bold">{item.sub}</p>
                 </div>
               </label>
             ))}
           </div>
-          <button 
-            onClick={() => { onSave(); setStep(1); }}
-            className="w-full bg-gray-900 text-white py-5 rounded-[2rem] font-black shadow-xl hover:bg-black transition-all"
-          >
-            บันทึกสำเร็จ
+          <button onClick={onSave} className="w-full bg-gray-900 text-white py-5 rounded-[2rem] font-black shadow-xl hover:bg-black transition-all">
+            บันทึกข้อมูลสำเร็จ ✨
           </button>
         </div>
       )}
@@ -228,82 +222,129 @@ const Logger = ({ onSave }) => {
   );
 };
 
-// 4. Analysis & Risk Screening
 const Analysis = () => {
   return (
     <div className="space-y-6 pb-28 animate-in fade-in duration-700">
-      <h2 className="text-2xl font-black text-gray-800 pt-2">AI Insights ✨</h2>
-      
-      {/* Risk Alert */}
-      <div className="bg-orange-50 border border-orange-100 p-5 rounded-[2rem] flex gap-4">
-        <AlertCircle className="text-orange-500 flex-shrink-0" />
+      <div className="pt-2 px-2">
+        <h2 className="text-2xl font-black text-gray-800">AI Analysis ✨</h2>
+        <p className="text-xs text-rose-400 font-bold uppercase tracking-widest">Food-Mood Correlation</p>
+      </div>
+
+      {/* Alert Card */}
+      <div className="bg-orange-50 border border-orange-100 p-5 rounded-[2.5rem] flex gap-4">
+        <div className="bg-white p-3 rounded-2xl text-orange-500 shadow-sm h-fit">
+          <AlertCircle size={20} />
+        </div>
         <div>
-          <h4 className="font-bold text-orange-800 text-sm">Sugar Crash Alert!</h4>
-          <p className="text-xs text-orange-700/80 leading-relaxed mt-1">
-            พบความสัมพันธ์ระหว่างการทานของหวานช่วง 14:00 น. และอารมณ์ดิ่งในช่วง 16:00 น. ติดกัน 3 วันแล้วนะคะ
+          <h4 className="font-bold text-orange-800 text-sm italic">Sugar Crash Alert! 📉</h4>
+          <p className="text-xs text-orange-700/80 leading-relaxed mt-1 font-medium">
+            สัปดาห์นี้คุณทาน High Sugar ช่วงบ่าย 4 ครั้ง ซึ่งสัมพันธ์กับอารมณ์หงุดหงิด (Mood Swing) หลังผ่านไป 2 ชั่วโมง
           </p>
         </div>
       </div>
 
-      {/* Graph Mockup */}
+      {/* Correlation Graph (Mockup) */}
       <div className="bg-white p-6 rounded-[2.5rem] border border-rose-50 shadow-sm">
-        <h3 className="font-bold text-gray-700 text-sm mb-4">แนวโน้มความสุข (7 วันล่าสุด)</h3>
-        <div className="h-40 flex items-end justify-between gap-1 px-2">
-          {[40, 65, 30, 85, 90, 55, 75].map((h, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              <div style={{ height: `${h}%` }} className={`w-full rounded-t-xl transition-all duration-1000 ${h < 50 ? 'bg-rose-200' : 'bg-rose-400'}`}></div>
-              <span className="text-[10px] font-bold text-gray-300">D{i+1}</span>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-bold text-gray-700 text-sm">สถิติความสุขรายสัปดาห์</h3>
+          <div className="flex gap-2 text-[10px] font-bold">
+            <span className="flex items-center gap-1 text-rose-400"><div className="w-2 h-2 rounded-full bg-rose-400"></div> อารมณ์</span>
+            <span className="flex items-center gap-1 text-blue-400"><div className="w-2 h-2 rounded-full bg-blue-400"></div> ลำไส้</span>
+          </div>
+        </div>
+        <div className="h-44 flex items-end justify-between gap-2 px-2">
+          {[
+            {h: 40, g: 60}, {h: 70, g: 80}, {h: 30, g: 40}, 
+            {h: 85, g: 90}, {h: 55, g: 60}, {h: 95, g: 85}, {h: 80, g: 75}
+          ].map((item, i) => (
+            <div key={i} className="flex-1 flex gap-1 h-full items-end justify-center">
+              <div style={{ height: `${item.h}%` }} className="w-2 bg-rose-300 rounded-t-full"></div>
+              <div style={{ height: `${item.g}%` }} className="w-2 bg-blue-200 rounded-t-full"></div>
             </div>
           ))}
         </div>
+        <div className="flex justify-between px-2 mt-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+          <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
+        </div>
       </div>
 
-      {/* Screening Card */}
-      <div className="bg-white p-6 rounded-[2.5rem] border border-rose-50 shadow-sm flex items-center justify-between">
-        <div>
-          <h4 className="font-bold text-gray-800 text-sm">แบบประเมินสุขภาพจิต (PHQ-9)</h4>
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">ควรตรวจเช็คทุก 2 สัปดาห์</p>
+      {/* Risk Screening */}
+      <div className="bg-white p-5 rounded-[2rem] border border-rose-50 shadow-sm flex items-center gap-4">
+        <div className="p-3 bg-rose-50 text-rose-400 rounded-2xl">
+          <Heart size={20} />
         </div>
-        <button className="bg-rose-50 text-rose-500 p-3 rounded-2xl"><ChevronRight /></button>
+        <div className="flex-1">
+          <h4 className="font-bold text-gray-800 text-sm">แบบประเมินภาวะซึมเศร้า</h4>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Screening with PHQ-9</p>
+        </div>
+        <ChevronRight className="text-gray-300" />
+      </div>
+    </div>
+  );
+};
+
+const Community = () => {
+  const posts = [
+    { id: 1, user: "Nalin", tag: "#MenuForAnxiety", title: "กล้วย+นมอัลมอนด์ ปั่น", likes: 124, icon: "🍌" },
+    { id: 2, user: "Pear", tag: "#MondayMotivation", title: "กรีกโยเกิร์ตโฮมเมด", likes: 89, icon: "🍦" },
+  ];
+
+  return (
+    <div className="space-y-6 pb-28 animate-in fade-in duration-700">
+      <div className="pt-2 px-2">
+        <h2 className="text-2xl font-black text-gray-800">Community 💖</h2>
+        <p className="text-xs text-rose-400 font-bold uppercase tracking-widest">Share Your Comfort Menu</p>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+        {['#AnxietyRelief', '#GutHealth', '#SugarFree', '#HappyVibe'].map((tag) => (
+          <span key={tag} className="px-4 py-2 bg-white rounded-full text-[10px] font-bold text-rose-400 border border-rose-50 shadow-sm whitespace-nowrap">
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <div className="space-y-4 px-2">
+        {posts.map((post) => (
+          <div key={post.id} className="bg-white p-5 rounded-[2.5rem] shadow-sm border border-rose-50">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center text-[10px] font-bold text-rose-500">{post.user[0]}</div>
+                <span className="text-xs font-bold text-gray-700">{post.user}</span>
+              </div>
+              <span className="text-[10px] font-bold text-rose-300 uppercase tracking-widest">{post.tag}</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-3xl p-4 bg-gray-50 rounded-3xl">{post.icon}</div>
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-800">{post.title}</h4>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 mt-1">
+                  <Heart size={10} className="text-rose-400 fill-rose-400" /> {post.likes} สมาชิกยืนยันว่าช่วยอารมณ์ดี
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
 // --- Main App ---
+
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [score, setScore] = useState(82);
-  const [moodLogs, setMoodLogs] = useState([
-    { level: 3, label: 'ปกติ', time: 'เช้า' },
-    { level: 4, label: 'สดใส', time: 'กลางวัน' }
-  ]);
-
-  const handleSave = () => {
-    setActiveTab('dashboard');
-    setScore(85);
-  };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F7] font-sans selection:bg-rose-200">
-      <div className="max-w-md mx-auto min-h-screen bg-white/40 shadow-2xl relative overflow-hidden backdrop-blur-3xl border-x border-rose-100/30">
+    <div className="min-h-screen bg-[#FFF8F9] flex justify-center selection:bg-rose-200">
+      <div className="w-full max-w-md bg-white/40 backdrop-blur-3xl min-h-screen relative shadow-2xl overflow-hidden flex flex-col border-x border-rose-100">
         
-        {/* Top Safe Area Spacing */}
-        <div className="h-4"></div>
-
-        <main className="px-6 h-screen overflow-y-auto no-scrollbar">
-          {activeTab === 'dashboard' && <Dashboard score={score} moodLogs={moodLogs} onNavigate={setActiveTab} />}
-          {activeTab === 'log' && <Logger onSave={handleSave} />}
+        {/* Main Content Area */}
+        <main className="flex-1 px-6 pt-6 overflow-y-auto no-scrollbar">
+          {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
+          {activeTab === 'log' && <Logger onSave={() => setActiveTab('dashboard')} />}
           {activeTab === 'analysis' && <Analysis />}
-          {activeTab === 'community' && (
-            <div className="py-20 text-center space-y-4">
-              <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-300">
-                <Users size={40} />
-              </div>
-              <h2 className="text-xl font-black text-gray-700">Community Coming Soon</h2>
-              <p className="text-xs text-gray-400">เตรียมแบ่งปันเมนูอารมณ์ดีกับเพื่อนๆ เร็วๆ นี้</p>
-            </div>
-          )}
+          {activeTab === 'community' && <Community />}
         </main>
 
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -313,8 +354,8 @@ const App = () => {
         @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;600&family=Nunito:wght@400;700;900&display=swap');
         
         body { 
-          font-family: 'Nunito', 'Mitr', sans-serif; 
-          background-color: #FFF5F7;
+          font-family: 'Nunito', 'Mitr', sans-serif;
+          background-color: #FFF8F9;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -332,17 +373,14 @@ const App = () => {
         }
 
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slide-in-from-bottom { from { transform: translateY(20px); } to { transform: translateY(0); } }
         @keyframes slide-in-from-right { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         .animate-in { animation-fill-mode: both; }
         .fade-in { animation-name: fade-in; }
-        .slide-in-from-bottom-4 { animation-name: slide-in-from-bottom; }
-        .slide-in-from-right-8 { animation-name: slide-in-from-right; }
+        .slide-in-from-right { animation-name: slide-in-from-right; }
       `}</style>
     </div>
   );
 };
 
 export default App;
-
